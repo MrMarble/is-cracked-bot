@@ -11,10 +11,13 @@
     "build:watch": "tsc -w -p tsconfig.release.json",
     "lint": "eslint . --ext .ts,.tsx"
   },
-  "keywords": [],
+  "keywords": [
+    "cracwatch"
+  ],
   "author": "MrMarble",
   "license": "ISC",
   "devDependencies": {
+    "@types/mongoose": "^5.7.32",
     "@types/node": "^14.0.26",
     "@typescript-eslint/eslint-plugin": "^3.7.0",
     "@typescript-eslint/parser": "^3.7.0",
@@ -25,7 +28,9 @@
     "typescript": "^3.9.7"
   },
   "dependencies": {
+    "dotenv": "^8.2.0",
     "mongoose": "^5.9.25",
-    "telegraf": "^3.38.0"
+    "telegraf": "^3.38.0",
+    "winston": "^3.3.3"
   }
 }
