@@ -5,8 +5,9 @@ import { newBot, start } from './telegram/telegram';
 import { Telegraf } from 'telegraf';
 import { TelegrafContext } from 'telegraf/typings/context';
 import { config } from 'dotenv';
+import { connectWS } from './crackwatch/websocket';
 
-let bot: Telegraf<TelegrafContext>;
+export let bot: Telegraf<TelegrafContext>;
 
 // Configure logger
 export const logger = createLogger({
@@ -48,6 +49,9 @@ connect(
 
 // Close connection before exiting
 process.on('beforeExit', () => disconnect());
+
+// Connect websocket
+connectWS();
 
 newBot(process.env.CRACKWATCH_TOKEN)
   .then((t) => {

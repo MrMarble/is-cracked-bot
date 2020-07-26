@@ -28,17 +28,11 @@ async function createUserWare(
       firstName: ctx.from?.first_name,
     });
     await user.setLastUpdated();
-    logger.info('user created / updated', {
-      module: 'middlewares',
-      userId: user.userId,
-      firstName: user.firstName,
-    });
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    ctx.state.user = user; // The recommended way is not even declared :roll_eyes:
+    // @ts-ignore: The recommended way is not even declared
+    ctx.state.user = user;
   } catch (error) {
     logger.error('error creating user', {
-      modue: 'middlewares',
+      module: 'middlewares',
       error: error.message,
     });
   }

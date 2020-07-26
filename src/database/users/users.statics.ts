@@ -1,5 +1,7 @@
 import { IUserDocument, IUserModel } from './users.types';
 
+import { logger } from './../../main';
+
 export async function findOneOrCreate(
   this: IUserModel,
   {
@@ -12,6 +14,7 @@ export async function findOneOrCreate(
   if (record) {
     return record;
   } else {
+    logger.info('new user', { module: 'user.statics', userId, userName });
     return this.create({ userId, firstName, userName });
   }
 }
