@@ -13,12 +13,13 @@ export const connect = (
     return;
   }
   try {
-    database = mongoose.createConnection(uri, {
+    mongoose.connect(uri, {
       useNewUrlParser: true,
       useFindAndModify: true,
       useUnifiedTopology: true,
       useCreateIndex: true,
     });
+    database = mongoose.connection;
   } catch (err) {
     logger.error('internal mongo error', {
       module: 'database',
