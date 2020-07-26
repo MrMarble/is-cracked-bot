@@ -17,5 +17,8 @@ export const Commands: Array<Command> = [
 ];
 
 function handleStart(ctx: TelegrafContext): void {
-  ctx.reply('Telegram bot made by Tinoquete');
+  ctx.reply(
+    'Telegram bot made by <a href="tg://user?id=256671105">MrMarble</a>',
+    { parse_mode: 'HTML' },
+  );
 }
