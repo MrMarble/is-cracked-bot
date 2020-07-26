@@ -2,6 +2,7 @@ import { Commands } from './handlers';
 import { Telegraf } from 'telegraf';
 import { TelegrafContext } from 'telegraf/typings/context';
 import { logger } from '../main';
+import { middlewares } from './middlewares';
 
 export const newBot = async (
   token: string,
@@ -12,13 +13,8 @@ export const newBot = async (
     logger.error('telegraf internal error', { err });
   });
 
-  bot.use((ctx, next) => {
-    logger.debug('update received', {
-      module: 'telegram',
-      type: ctx.updateType,
-    });
-    next();
-  });
+  logger.info('registering middlewares', { module: 'telegram' });
+  bot.use(...middlewares);
 
   const me = await bot.telegram.getMe();
 
