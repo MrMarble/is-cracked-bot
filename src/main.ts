@@ -11,7 +11,7 @@ export let bot: Telegraf<TelegrafContext>;
 
 // Configure logger
 export const logger = createLogger({
-  level: 'info',
+  level: 'debug',
   format: format.combine(format.timestamp(), format.json()),
   transports: [
     new transports.Console({

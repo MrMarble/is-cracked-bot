@@ -1,24 +1,59 @@
+import * as WebSocket from 'ws';
+
 import { idGen, ws } from './websocket';
+import { parseResponse, responseToString } from './utils';
 
 import { Channel } from '../utils/channel';
+import { GameModel } from './../database/games/games.model';
 import { IGameDocument } from '../database/games/games.types';
 import { SocketResponse } from './types';
-import { handleGame } from './handlers';
 import { logger } from '../main';
-import { responseToString } from './utils';
 
-export function getGame(name: string, chnl: Channel<IGameDocument>): void {
+export function getGame(slug: string, chnl: Channel<IGameDocument>): void {
   const id: string = idGen.next().value;
   const msg: SocketResponse = {
     msg: 'method',
     method: 'game.getAll',
-    params: [name],
+    params: [slug],
     id,
   };
 
   logger.info('fetching game info', { module: 'websocket', msg });
 
-  ws.on('message', handleGame.bind({ ws, id, chnl }));
+  const handleGame = (data: WebSocket.Data) => {
+    const msg: SocketResponse = parseResponse(data);
+    if (msg.msg == 'result' && msg.id == id) {
+      console.log('entro');
+
+      GameModel.findOneAndUpdate(
+        { slug },
+        {
+          name: msg.result.game.title,
+          isAAA: msg.result.game.isAAA,
+          slug: msg.result.game.slug,
+          drm: msg.result.game.protections,
+          image: msg.result.game.image,
+          releaseDate: msg.result.game.releaseDate,
+        },
+        {
+          upsert: true,
+          setDefaultsOnInsert: true,
+          useFindAndModify: true,
+          new: true,
+        },
+        (err, doc) => {
+          if (err) {
+            logger.error('error creating game', { err: err.message });
+            return;
+          }
+          chnl.send(doc);
+        },
+      );
+      ws.off('message', handleGame);
+    }
+  };
+
+  ws.on('message', handleGame);
   ws.send(responseToString(msg), (err) => {
     if (err) {
       logger.error('error fetching game', {

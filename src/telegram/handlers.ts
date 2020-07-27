@@ -46,7 +46,7 @@ async function handleGetGameInfo(ctx: TelegrafContext): Promise<void> {
     text: ctx.message.text,
   });
 
-  const gameName = ctx.message.text.split(' ', 2)[1];
+  const gameName = ctx.message.text.substr('/game'.length).trim();
   const games = await GameModel.findByName(gameName);
   let game: IGameDocument;
 
