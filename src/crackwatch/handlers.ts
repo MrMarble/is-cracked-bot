@@ -1,68 +1,56 @@
 import * as WebSocket from 'ws';
 
+import { SocketResponse, socketThis } from './types';
 import { parseResponse, responseToString } from './utils';
 
-import { Channel } from './../utils/channel';
 import { GameModel } from './../database/games/games.model';
-import { TelegrafContext } from 'telegraf/typings/context';
 import { logger } from '../main';
 
-export interface Response {
-  msg: string;
-  method?: string;
-  params?: Array<string>;
-  version?: string;
-  support?: Array<string>;
-  id?: string;
-  result?: GameResult;
-}
-interface GameResult {
-  game: {
-    _id: string;
-    isAAA: boolean;
-    title: string;
-    image: string;
-    releaseDate: Date;
-    slug: string;
-    protections: Array<string>;
-  };
-}
-
-interface socketThis {
-  ws: WebSocket;
-  id: string;
-  ctx?: TelegrafContext;
-  chnl?: Channel<unknown>;
-}
-
-export function handleConnect(this: WebSocket): void {
-  logger.info('websocket connected', { module: 'crackwatch', url: this.url });
-  const msg: Response = {
-    msg: 'connect',
-    version: '1',
-    support: ['1', 'pre2', 'pre1'],
-  };
-
-  this.send(responseToString(msg), (err) => {
-    if (err) {
-      logger.error('error loggin websocket', {
-        module: 'websockets',
-        error: err.message,
-      });
-    }
+export function handleOpen(event: WebSocket.OpenEvent): void {
+  logger.info('websocket open', {
+    url: event.target.url,
   });
-  logger.info('websocket logged');
+}
+export function handleMessage(event: WebSocket.MessageEvent): void {
+  const msg = parseResponse(event.data);
+
+  if (msg.server_id) {
+    logger.info('websocket connected', { msg });
+    event.target.send(
+      responseToString({
+        msg: 'connect',
+        version: '1',
+        support: ['1', 'pre2', 'pre1'],
+      }),
+    );
+    return;
+  }
+  switch (msg.msg) {
+    case 'connected':
+      logger.info('websocket authorized', { msg });
+      break;
+    case 'ping':
+      logger.info('websocket ping', { msg });
+      handlePing.bind(event.target)();
+      break;
+    case 'pong':
+      logger.info('websocket pong', { msg });
+      break;
+    default:
+      logger.info('websocket message', { data: event.data, type: event.type });
+      break;
+  }
 }
 
-export const handleErr = (err: Error): void => {
-  logger.error('error connecting websocket', {
-    module: 'crackwatch',
-    error: err.message,
+export const handleErr = (event: WebSocket.ErrorEvent): void => {
+  logger.error('websocket error', {
+    error: event.message,
+    type: event.type,
   });
 };
 
 export function handleGame(this: socketThis, data: string): void {
-  const msg: Response = parseResponse(data);
+  const msg: SocketResponse = parseResponse(data);
   if (msg.msg == 'result' && msg.id == this.id) {
     GameModel.create({
       name: msg.result.game.title,
@@ -80,14 +68,17 @@ export function handleGame(this: socketThis, data: string): void {
   }
 }
 
-export function handlePing(this: WebSocket): void {
-  const response: Response = { msg: 'pong' };
-  logger.info('pong', {
-    module: 'handlers',
-    response: responseToString(response),
-  });
-  this.send(responseToString(response), () => {
-    setTimeout(() => this.send(responseToString({ msg: 'ping' })), 30 * 1000);
-    this.send(responseToString({ msg: 'ping' }));
-  });
+function handlePing(this: WebSocket): void {
+  this.send(
+    responseToString({
+      msg: 'pong',
+    }),
+  );
+  setTimeout(() => {
+    this.send(
+      responseToString({
+        msg: 'ping',
+      }),
+    );
+  }, 25 * 1000);
 }

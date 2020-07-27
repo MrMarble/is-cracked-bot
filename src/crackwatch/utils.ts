@@ -1,4 +1,6 @@
-import { Response } from './handlers';
+import * as WebSocket from 'ws';
+
+import { SocketResponse } from './types';
 
 export function getUri(): string {
   return `wss://crackwatch.com/sockjs/${getRandomNumber()}/${getRandomString()}/websocket`;
@@ -18,19 +20,26 @@ export function getRandomString(): string {
   return result.join('');
 }
 
-export function* idGenerator(): Generator<string> {
+export function* idGenerator(): Generator<string, never, never> {
   let id = 1;
   while (true) {
     yield (id++).toString();
   }
 }
 
-export function responseToString(response: Response): string {
+export function responseToString(response: SocketResponse): string {
   return `["${JSON.stringify(response).replace(/"/g, '\\"')}"]`;
 }
 
-export function parseResponse(response: string): Response {
-  const pattern = /a?\["(.+)"\]/g;
-  const matches = pattern.exec(response);
-  return JSON.parse(matches[1].replace(/\\"/g, '"'));
+export function parseResponse(
+  response: string | WebSocket.Data,
+): SocketResponse {
+  if (typeof response == 'string') {
+    const pattern = /a?\["(.+)"\]/g;
+    const matches = pattern.exec(response);
+    if (matches?.length > 0) {
+      return JSON.parse(matches[1].replace(/\\"/g, '"'));
+    }
+  }
+  return { msg: '' };
 }

@@ -3,7 +3,7 @@ import { Channel } from './../utils/channel';
 import { GameModel } from '../database/games/games.model';
 import { IGameDocument } from './../database/games/games.types';
 import { TelegrafContext } from 'telegraf/typings/context';
-import { getGame } from '../crackwatch/websocket';
+import { getGame } from '../crackwatch/methods';
 import { logger } from '../main';
 
 interface Command {
@@ -52,7 +52,7 @@ async function handleGetGameInfo(ctx: TelegrafContext): Promise<void> {
 
   if (games.length == 0) {
     const chnl = new Channel<IGameDocument>();
-    getGame(gameName, ctx, chnl);
+    getGame(gameName, chnl);
     game = await chnl.recv();
   } else {
     game = games[0];

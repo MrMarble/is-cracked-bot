@@ -1,26 +1,20 @@
 import * as WebSocket from 'ws';
 
-import {
-  Response,
-  handleConnect,
-  handleErr,
-  handleGame,
-  handlePing,
-} from './handlers';
-import { getUri, idGenerator, responseToString } from './utils';
+import { getUri, idGenerator } from './utils';
+import { handleErr, handleMessage, handleOpen } from './handlers';
 
-import { Channel } from './../utils/channel';
-import { IGameDocument } from './../database/games/games.types';
-import { TelegrafContext } from 'telegraf/typings/context';
 import { logger } from './../main';
 
-export let ws: WebSocket;
-export let idGen: Generator<string>;
+export let ws: WebSocket; // Global websocket client
+export let idGen: Generator<string, never, never>; // Id Generator for websocket communication
+
 export const connectWS = (): void => {
   if (ws) {
     return;
   }
+
   const uri = getUri();
+
   try {
     ws = new WebSocket(uri);
     idGen = idGenerator();
@@ -33,12 +27,17 @@ export const connectWS = (): void => {
     process.exit(1);
   }
 
-  ws.on('error', handleErr);
-  ws.once('message', handleConnect);
-  ws.on('ping', handlePing);
-  ws.on('close', (code, reason) => {
-    logger.info('websocket closed', { code, reason });
-  });
+  ws.onerror = handleErr;
+  ws.onopen = handleOpen;
+  ws.onmessage = handleMessage;
+  ws.onclose = (event: WebSocket.CloseEvent) => {
+    logger.info('websocket closed', {
+      code: event.code,
+      reason: event.reason,
+      wasClean: event.wasClean,
+    });
+    reconnectWS();
+  };
 };
 
 export const closeWS = (): void => {
@@ -46,28 +45,12 @@ export const closeWS = (): void => {
   ws = null;
 };
 
-export function getGame(
-  name: string,
-  ctx: TelegrafContext,
-  chnl: Channel<IGameDocument>,
-): void {
-  const id: string = idGen.next().value;
-  const msg: Response = {
-    msg: 'method',
-    method: 'game.getAll',
-    params: [name],
-    id,
-  };
-
-  logger.info('fetching game info', { module: 'websocket', msg });
-
-  ws.on('message', handleGame.bind({ ws, id, ctx, chnl }));
-  ws.send(responseToString(msg), (err) => {
-    if (err) {
-      logger.error('error fetching game', {
-        module: 'websockets',
-        error: err.message,
-      });
-    }
-  });
+/**
+ * Waits 3 seconds and tries to connect
+ */
+function reconnectWS(): void {
+  setTimeout(() => {
+    ws = null;
+    connectWS();
+  }, 3 * 1000);
 }
