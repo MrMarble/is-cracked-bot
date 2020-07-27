@@ -4,5 +4,5 @@ export async function findByName(
   this: IGameModel,
   name: string,
 ): Promise<IGameDocument[]> {
-  return this.find({ name: { $regex: `/^${name}/` } });
+  return this.find({ name: { $regex: `^${name}`, $options: 'i' } });
 }

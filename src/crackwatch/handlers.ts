@@ -2,6 +2,8 @@ import * as WebSocket from 'ws';
 
 import { parseResponse, responseToString } from './utils';
 
+import { Channel } from './../utils/channel';
+import { GameModel } from './../database/games/games.model';
 import { TelegrafContext } from 'telegraf/typings/context';
 import { logger } from '../main';
 
@@ -15,17 +17,22 @@ export interface Response {
   result?: GameResult;
 }
 interface GameResult {
-  _id: string;
-  isAAA: boolean;
-  title: string;
-  image: string;
-  releaseDate: Date;
+  game: {
+    _id: string;
+    isAAA: boolean;
+    title: string;
+    image: string;
+    releaseDate: Date;
+    slug: string;
+    protections: Array<string>;
+  };
 }
 
 interface socketThis {
   ws: WebSocket;
   id: string;
   ctx?: TelegrafContext;
+  chnl?: Channel<unknown>;
 }
 
 export function handleConnect(this: WebSocket): void {
@@ -44,7 +51,7 @@ export function handleConnect(this: WebSocket): void {
       });
     }
   });
-  console.log('websocket logged', { response: responseToString(msg) });
+  logger.info('websocket logged');
 }
 
 export const handleErr = (err: Error): void => {
@@ -57,11 +64,18 @@ export const handleErr = (err: Error): void => {
 export function handleGame(this: socketThis, data: string): void {
   const msg: Response = parseResponse(data);
   if (msg.msg == 'result' && msg.id == this.id) {
-    this.ctx
-      .reply(`<code>${JSON.stringify(msg.result)}</code>`, {
-        parse_mode: 'HTML',
-      })
-      .catch((reason) => console.log(reason));
+    GameModel.create({
+      name: msg.result.game.title,
+      isAAA: msg.result.game.isAAA,
+      slug: msg.result.game.slug,
+      drm: msg.result.game.protections,
+      image: msg.result.game.image,
+      releaseDate: msg.result.game.releaseDate,
+    })
+      .then((g) => this.chnl.send(g))
+      .catch((err: Error) =>
+        logger.error('error creating game', { err: err.message }),
+      );
     this.ws.off('message', handleGame);
   }
 }

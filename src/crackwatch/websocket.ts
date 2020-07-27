@@ -9,6 +9,8 @@ import {
 } from './handlers';
 import { getUri, idGenerator, responseToString } from './utils';
 
+import { Channel } from './../utils/channel';
+import { IGameDocument } from './../database/games/games.types';
 import { TelegrafContext } from 'telegraf/typings/context';
 import { logger } from './../main';
 
@@ -44,16 +46,22 @@ export const closeWS = (): void => {
   ws = null;
 };
 
-export function getGame(ctx: TelegrafContext): void {
+export function getGame(
+  name: string,
+  ctx: TelegrafContext,
+  chnl: Channel<IGameDocument>,
+): void {
   const id: string = idGen.next().value;
   const msg: Response = {
     msg: 'method',
     method: 'game.getAll',
-    params: ['death-stranding'],
+    params: [name],
     id,
   };
+
   logger.info('fetching game info', { module: 'websocket', msg });
-  ws.on('message', handleGame.bind({ ws, id, ctx }));
+
+  ws.on('message', handleGame.bind({ ws, id, ctx, chnl }));
   ws.send(responseToString(msg), (err) => {
     if (err) {
       logger.error('error fetching game', {

@@ -1,5 +1,6 @@
+import { IGameDocument, IGameModel } from './games.types';
+
 import GameSchema from './games.schema';
-import { IGameDocument } from './games.types';
 import { model } from 'mongoose';
 
-export const GameModel = model<IGameDocument>('game', GameSchema);
+export const GameModel = model<IGameDocument>('game', GameSchema) as IGameModel;
