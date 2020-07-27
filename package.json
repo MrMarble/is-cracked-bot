@@ -32,7 +32,6 @@
     "dotenv": "^8.2.0",
     "mongoose": "^5.9.25",
     "telegraf": "^3.38.0",
-    "websocket-as-promised": "^1.0.1",
     "winston": "^3.3.3",
     "ws": "^7.3.1"
   }

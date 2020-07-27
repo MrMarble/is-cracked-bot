@@ -20,5 +20,8 @@
   "include": [
     "src/**/*",
     "__tests__/**/*"
+  ],
+  "exclude": [
+    "build/*"
   ]
 }
