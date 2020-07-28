@@ -10,7 +10,7 @@ export async function setLastUpdated(this: IGameDocument): Promise<void> {
 
 export function getGameCard(this: IGameDocument): string {
   const card = [
-    `<a href="${this.image}">👾</a> <b>${this.name}</b><br>`,
+    `<a href="${this.image}"> </a><b>${this.name}</b>\n`,
     `<b>🗓 Release${
       this.releaseDate.getTime() < Date.now() ? 'd' : ''
     }:</b>\t${this.releaseDateStr()}`,
