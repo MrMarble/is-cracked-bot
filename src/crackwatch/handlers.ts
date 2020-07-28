@@ -28,11 +28,11 @@ export function handleMessage(event: WebSocket.MessageEvent): void {
       logger.info('websocket authorized', { msg });
       break;
     case 'ping':
-      logger.info('websocket ping', { msg });
+      logger.debug('websocket ping', { msg });
       handlePing.bind(event.target)();
       break;
     case 'pong':
-      logger.info('websocket pong', { msg });
+      logger.debug('websocket pong', { msg });
       break;
     default:
       logger.debug('websocket message', { data: event.data, type: event.type });

@@ -20,8 +20,13 @@ export interface GameResult {
     title: string;
     image: string;
     releaseDate: Date;
+    crackDate: Date;
     slug: string;
     protections: Array<string>;
+    groups: Array<string>;
+    links: { [key: string]: string };
+    prices: Array<number>;
+    platforms: Array<string>;
   };
 }
 

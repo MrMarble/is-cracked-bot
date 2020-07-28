@@ -30,6 +30,7 @@ export const connect = (
 
   database.once('open', async () => {
     logger.info('Connected to database', { host, username });
+    logger.debug('Mongo uri', { uri });
   });
   database.on('error', () => {
     logger.error('Error connecting to database', { host, username });
