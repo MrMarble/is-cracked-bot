@@ -9,10 +9,6 @@ export async function setLastUpdated(this: IGameDocument): Promise<void> {
 }
 
 export function getGameCard(this: IGameDocument): string {
-  const prices = this.prices.map(
-    (price, index) => `<pre>  ${this.platforms[index]}\t${price}</pre>`,
-  );
-
   const card = [
     `<a href="${this.image}">👾</a><b>${this.name}</b>`,
     `<b>📆 Release${
@@ -22,8 +18,6 @@ export function getGameCard(this: IGameDocument): string {
     `<b>🏴‍☠️ Cracked:</b>\t${this.isCracked() ? '✅' : '❌'}`,
     this.isCracked() && `<b>📆 Crack Date:</b>\t${this.crackDateStr()}`,
     this.isCracked() && `<b>Cracked by:</b>\t${this.sceneGroups}`,
-    `<b>💰 Prices:</b>`,
-    prices.join(`\n`),
   ];
   return card.filter((param) => !!param).join('\n');
 }
