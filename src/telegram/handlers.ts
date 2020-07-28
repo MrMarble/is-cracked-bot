@@ -1,15 +1,14 @@
 import {
   BotCommand,
   InlineQueryResultArticle,
-  User,
 } from 'telegraf/typings/telegram-types';
+import { getGame, searchGame } from '../crackwatch/methods';
 
 import { Channel } from './../utils/channel';
 import { CustomContext } from './telegram';
 import { GameModel } from '../database/games/games.model';
 import { IGameDocument } from './../database/games/games.types';
 import { Markup } from 'telegraf';
-import { getGame } from '../crackwatch/methods';
 import { logger } from '../main';
 
 interface Command {
@@ -72,6 +71,7 @@ async function handleGetGameInfo(ctx: CustomContext): Promise<void> {
     const chnl = new Channel<IGameDocument>();
     getGame(gameName, chnl);
     game = await chnl.recv();
+    chnl.close();
   } else {
     game = games[0];
   }
@@ -105,21 +105,76 @@ export async function handleInlineQuery(ctx: CustomContext): Promise<void> {
     from: ctx.from.id,
     query: ctx.inlineQuery.query,
   });
-  let results: InlineQueryResultArticle[];
+  let results: InlineQueryResultArticle[] = [];
   if (ctx.inlineQuery.query.length < 3) {
     results = [
       {
         type: 'article',
-        title: 'prueba',
+        title: 'Escribe 3 caracteres para empezar a buscar',
         id: 'random',
         input_message_content: {
-          message_text: 'prueba 2',
+          message_text: 'eres tonto',
+          parse_mode: 'HTML',
         },
-        reply_markup: Markup.inlineKeyboard([
-          Markup.urlButton('search game', 'www.google.es'),
-        ]),
       },
     ];
+  } else {
+    let games = await GameModel.findByName(ctx.inlineQuery.query);
+    if (games.length == 0) {
+      const chnl = new Channel<IGameDocument[]>();
+      searchGame(ctx.inlineQuery.query, chnl);
+      games = await chnl.recv();
+      chnl.close();
+    }
+    for (const game of games) {
+      results.push({
+        type: 'article',
+        title: game.title,
+        id: game.id,
+        thumb_url: game.image,
+        thumb_height: 524,
+        thumb_width: 933,
+        input_message_content: {
+          message_text: game.getGameCard(),
+          parse_mode: 'HTML',
+        },
+        reply_markup: Markup.inlineKeyboard([
+          Markup.callbackButton('♻️ Update', `update:${game.id}`),
+        ]),
+      });
+    }
   }
-  ctx.answerInlineQuery(results);
+  ctx.answerInlineQuery(results.slice(0, 50), { cache_time: 24 * 60 * 60 });
+}
+
+export async function handleCallbackQuery(ctx: CustomContext): Promise<void> {
+  logger.info('handle callback query', {
+    from: ctx.callbackQuery.from.id,
+    data: ctx.callbackQuery.data,
+  });
+
+  const [method, payload] = ctx.callbackQuery.data.split(':');
+  switch (method) {
+    case 'update': {
+      let game = await GameModel.findById(payload).exec();
+      if (Date.now() - game.lastUpdated.getTime() > 1000 * 60 * 60 * 24) {
+        const chnl = new Channel<IGameDocument>();
+        getGame(game.slug, chnl);
+        game = await chnl.recv();
+        chnl.close();
+        ctx.editMessageText(game.getGameCard(), {
+          parse_mode: 'HTML',
+          reply_markup: Markup.inlineKeyboard([
+            Markup.callbackButton('♻️ Update', `update:${game.id}`),
+          ]),
+        });
+      } else {
+        ctx.answerCbQuery('Already updated!', false, {});
+      }
+      break;
+    }
+
+    default:
+      break;
+  }
 }

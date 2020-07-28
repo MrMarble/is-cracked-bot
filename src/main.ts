@@ -1,13 +1,12 @@
+import { CustomContext, newBot, start } from './telegram/telegram';
 import { connect, disconnect } from './database/database';
 import { createLogger, format, transports } from 'winston';
-import { newBot, start } from './telegram/telegram';
 
 import { Telegraf } from 'telegraf';
-import { TelegrafContext } from 'telegraf/typings/context';
 import { config } from 'dotenv';
 import { connectWS } from './crackwatch/websocket';
 
-export let bot: Telegraf<TelegrafContext>;
+export let bot: Telegraf<CustomContext>;
 
 // Configure logger
 export const logger = createLogger({

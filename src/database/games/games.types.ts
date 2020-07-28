@@ -1,11 +1,11 @@
 import { Document, Model } from 'mongoose';
 
 export interface IGame {
-  name: string;
+  title: string;
   releaseDate: Date;
   crackDate?: Date;
-  protection: Array<string>;
-  sceneGroups?: Array<string>;
+  protections: Array<string>;
+  groups?: Array<string>;
   slug: string;
   image: string;
   isAAA: boolean;
@@ -22,6 +22,7 @@ export interface IGameDocument extends IGame, Document {
   isCracked: (this: IGameDocument) => boolean;
   crackDateStr: (this: IGameDocument) => string;
   releaseDateStr: (this: IGameDocument) => string;
+  lastUpdateDateStr: (this: IGameDocument) => string;
 }
 export interface IGameModel extends Model<IGameDocument> {
   findByName: (this: IGameModel, name: string) => Promise<IGameDocument[]>;

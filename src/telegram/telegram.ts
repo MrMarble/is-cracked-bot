@@ -1,4 +1,4 @@
-import { Commands, handleInlineQuery } from './handlers';
+import { Commands, handleCallbackQuery, handleInlineQuery } from './handlers';
 
 import { IUserDocument } from './../database/users/users.types';
 import { Telegraf } from 'telegraf';
@@ -56,4 +56,5 @@ const registerHandlers = (bot: Telegraf<CustomContext>) => {
 
   // Inline
   bot.on('inline_query', handleInlineQuery);
+  bot.on('callback_query', handleCallbackQuery);
 };

@@ -2,6 +2,7 @@ import {
   crackDateStr,
   getGameCard,
   isCracked,
+  lastUpdateDateStr,
   releaseDateStr,
   setLastUpdated,
 } from './games.methods';
@@ -10,11 +11,11 @@ import { Schema } from 'mongoose';
 import { findByName } from './games.statics';
 
 const GameSchema = new Schema({
-  name: String,
+  title: String,
   releaseDate: Date,
   crackDate: Date,
-  protection: [String],
-  sceneGroups: [String],
+  protections: [String],
+  groups: [String],
   slug: String,
   image: String,
   isAAA: Boolean,
@@ -38,5 +39,6 @@ GameSchema.methods.getGameCard = getGameCard;
 GameSchema.methods.isCracked = isCracked;
 GameSchema.methods.crackDateStr = crackDateStr;
 GameSchema.methods.releaseDateStr = releaseDateStr;
+GameSchema.methods.lastUpdateDateStr = lastUpdateDateStr;
 
 export default GameSchema;
