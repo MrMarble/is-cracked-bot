@@ -23,8 +23,6 @@ export function getGame(slug: string, chnl: Channel<IGameDocument>): void {
   const handleGame = (data: WebSocket.Data) => {
     const msg: SocketResponse = parseResponse(data);
     if (msg.msg == 'result' && msg.id == id) {
-      console.log('entro');
-
       GameModel.findOneAndUpdate(
         { slug },
         {
