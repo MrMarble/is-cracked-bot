@@ -10,6 +10,7 @@ const UserSchema = new Schema({
   lastName: String,
   userName: String,
   subscriptions: [GameSchema],
+  dateOfRegistry: Date,
   dateOfEntry: {
     type: Date,
     default: new Date(),

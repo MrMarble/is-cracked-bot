@@ -9,6 +9,7 @@ export interface IUser {
   userName?: string;
   subscriptions?: Array<IGame>;
   dateOfEntry?: Date;
+  dateOfRegistry?: Date;
   lastUpdated?: Date;
 }
 
