@@ -1,11 +1,11 @@
-import { TelegrafContext } from 'telegraf/typings/context';
+import { CustomContext } from './telegram';
 import { UserModel } from './../database/users/users.model';
 import { logger } from '../main';
 
 export const middlewares = [loggerWare, createUserWare];
 
 async function loggerWare(
-  ctx: TelegrafContext,
+  ctx: CustomContext,
   next: () => Promise<void>,
 ): Promise<void> {
   logger.debug('update received', {
@@ -18,7 +18,7 @@ async function loggerWare(
 }
 
 async function createUserWare(
-  ctx: TelegrafContext,
+  ctx: CustomContext,
   next: () => Promise<void>,
 ): Promise<void> {
   try {
@@ -28,7 +28,6 @@ async function createUserWare(
       firstName: ctx.from?.first_name,
     });
     await user.setLastUpdated();
-    // @ts-ignore: The recommended way is not even declared
     ctx.state.user = user;
   } catch (error) {
     logger.error('error creating user', {
