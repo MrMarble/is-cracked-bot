@@ -11,12 +11,12 @@ export async function setLastUpdated(this: IGameDocument): Promise<void> {
 export function getGameCard(this: IGameDocument): string {
   const card = [
     `<a href="${this.image}">👾</a> <b>${this.name}</b><br>`,
-    `<b>📆 Release${
+    `<b>🗓 Release${
       this.releaseDate.getTime() < Date.now() ? 'd' : ''
     }:</b>\t${this.releaseDateStr()}`,
-    `<b>🛡 Protection:</b>\t${this.protection}`,
+    `<b>🔒 Protection:</b>\t${this.protection}`,
     `<b>🏴‍☠️ Cracked:</b>\t${this.isCracked() ? '✅' : '❌'}`,
-    this.isCracked() && `<b>📆 Crack Date:</b>\t${this.crackDateStr()}`,
+    this.isCracked() && `<b>🗓 Crack Date:</b>\t${this.crackDateStr()}`,
     this.isCracked() && `<b>☠️ Cracked by:</b>\t${this.sceneGroups}`,
   ];
   return card.filter((param) => !!param).join('\n');
