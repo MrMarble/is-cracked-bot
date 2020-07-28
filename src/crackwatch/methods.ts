@@ -43,7 +43,7 @@ export function getGame(slug: string, chnl: Channel<IGameDocument>): void {
         {
           upsert: true,
           setDefaultsOnInsert: true,
-          useFindAndModify: true,
+          useFindAndModify: false,
           new: true,
         },
         (err, doc) => {
