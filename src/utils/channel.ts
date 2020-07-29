@@ -95,9 +95,7 @@ export class Channel<T> implements ReceiveOnlyChannel<T>, SendOnlyChannel<T> {
     this.isClosed = true;
   };
 
-  public forEach = async (
-    handler: (item: T) => Promise<void>,
-  ): Promise<void> => {
+  public forEach = async (handler: (item: T) => Promise<void>): Promise<void> => {
     for (;;) {
       const item = await this.recv();
       if (item === null) {

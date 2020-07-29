@@ -24,12 +24,7 @@ export const logger = createLogger({
 // Check required env vars
 config();
 
-for (const envVar of [
-  'CRACKWATCH_TOKEN',
-  'MONGO_HOST',
-  'MONGO_USER',
-  'MONGO_PASSWORD',
-]) {
+for (const envVar of ['CRACKWATCH_TOKEN', 'MONGO_HOST', 'MONGO_USER', 'MONGO_PASSWORD']) {
   if (!(envVar in process.env)) {
     logger.error('Missing required environment variable', {
       module: 'main',
@@ -40,11 +35,7 @@ for (const envVar of [
 }
 
 // Connect to the DB
-connect(
-  process.env.MONGO_USER,
-  process.env.MONGO_PASSWORD,
-  process.env.MONGO_HOST,
-);
+connect(process.env.MONGO_USER, process.env.MONGO_PASSWORD, process.env.MONGO_HOST);
 
 // Close connection before exiting
 process.on('beforeExit', () => disconnect());

@@ -4,10 +4,7 @@ import { logger } from '../main';
 
 export const middlewares = [loggerWare, createUserWare];
 
-async function loggerWare(
-  ctx: CustomContext,
-  next: () => Promise<void>,
-): Promise<void> {
+async function loggerWare(ctx: CustomContext, next: () => Promise<void>): Promise<void> {
   logger.debug('update received', {
     module: 'telegram',
     type: ctx.updateType,
@@ -17,10 +14,7 @@ async function loggerWare(
   next();
 }
 
-async function createUserWare(
-  ctx: CustomContext,
-  next: () => Promise<void>,
-): Promise<void> {
+async function createUserWare(ctx: CustomContext, next: () => Promise<void>): Promise<void> {
   try {
     const user = await UserModel.findOneOrCreate({
       userId: ctx.from?.id,

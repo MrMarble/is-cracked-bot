@@ -12,9 +12,7 @@ export interface CustomContext extends TelegrafContext {
 
 let bot: Telegraf<CustomContext>;
 
-export const newBot = async (
-  token: string,
-): Promise<Telegraf<CustomContext>> => {
+export const newBot = async (token: string): Promise<Telegraf<CustomContext>> => {
   bot = new Telegraf(token);
 
   bot.catch((err: Error) => {

@@ -56,10 +56,7 @@ export function getGame(slug: string, chnl: Channel<IGameDocument>): void {
   });
 }
 
-export async function searchGame(
-  param: string,
-  chnl: Channel<IGameDocument[]>,
-): Promise<void> {
+export async function searchGame(param: string, chnl: Channel<IGameDocument[]>): Promise<void> {
   const id: string = idGen.next().value;
   const msg: SocketResponse = {
     msg: 'method',

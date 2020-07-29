@@ -3,11 +3,7 @@ import * as mongoose from 'mongoose';
 import { logger } from './../main';
 
 let database: mongoose.Connection;
-export const connect = (
-  username: string,
-  password: string,
-  host: string,
-): void => {
+export const connect = (username: string, password: string, host: string): void => {
   const uri = `mongodb://${username}:${password}@${host}:27017/?retryWrites=true&w=majority`;
   if (database) {
     return;

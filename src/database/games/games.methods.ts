@@ -11,9 +11,7 @@ export async function setLastUpdated(this: IGameDocument): Promise<void> {
 export function getGameCard(this: IGameDocument): string {
   const card = [
     `<a href="${this.image}"> </a><b>${this.title}</b>\n`,
-    `<b>🗓 Release${
-      this.releaseDate.getTime() < Date.now() ? 'd' : ''
-    }:</b>\t${this.releaseDateStr()}`,
+    `<b>🗓 Release${this.releaseDate.getTime() < Date.now() ? 'd' : ''}:</b>\t${this.releaseDateStr()}`,
     `<b>🔒 Protection:</b>\t${this.protections}`,
     `<b>🏴‍☠️ Cracked:</b>\t${this.isCracked() ? '✅' : '❌'}`,
     this.isCracked() && `<b>🗓 Crack Date:</b>\t${this.crackDateStr()}`,

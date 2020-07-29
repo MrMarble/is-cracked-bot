@@ -18,16 +18,9 @@ export interface IUserDocument extends IUser, Document {
 }
 
 export interface IUserModel extends Model<IUserDocument> {
-  findByUserName: (
-    this: IUserModel,
-    userName: string,
-  ) => Promise<IUserDocument[]>;
+  findByUserName: (this: IUserModel, userName: string) => Promise<IUserDocument[]>;
   findOneOrCreate: (
     this: IUserModel,
-    {
-      userId,
-      userName,
-      firstName,
-    }: { userId: number; userName?: string; firstName?: string },
+    { userId, userName, firstName }: { userId: number; userName?: string; firstName?: string },
   ) => Promise<IUserDocument>;
 }
