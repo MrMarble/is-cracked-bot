@@ -17,7 +17,7 @@ export const newBot = async (token: string): Promise<Telegraf<CustomContext>> =>
   bot = new Telegraf(token);
 
   bot.catch((err: Error) => {
-    logger.error('telegraf internal error', { err });
+    logger.error('telegraf internal error', { err: err.message });
   });
 
   logger.info('registering middlewares', { module: 'telegram' });
