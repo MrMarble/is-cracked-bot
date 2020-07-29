@@ -1,10 +1,10 @@
 import { CustomContext, newBot, start } from './telegram/telegram';
+import { closeWS, connectWS } from './crackwatch/websocket';
 import { connect, disconnect } from './database/database';
 import { createLogger, format, transports } from 'winston';
 
 import { Telegraf } from 'telegraf';
 import { config } from 'dotenv';
-import { connectWS } from './crackwatch/websocket';
 
 export let bot: Telegraf<CustomContext>;
 
@@ -43,12 +43,16 @@ process.on('beforeExit', () => disconnect());
 // Connect websocket
 connectWS();
 
+// Close connection before exiting
+process.on('beforeExit', () => closeWS());
+
+// Start the bot
 newBot(process.env.CRACKWATCH_TOKEN)
   .then((t) => {
     bot = t;
     start(bot);
   })
-  .catch((error) => {
-    logger.error('failed bot instantiation', { module: 'main', error });
+  .catch((error: Error) => {
+    logger.error('failed bot instantiation', { module: 'main', error: error.message });
     process.exit(1);
   });

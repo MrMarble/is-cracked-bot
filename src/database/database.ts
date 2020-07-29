@@ -34,6 +34,7 @@ export const connect = (username: string, password: string, host: string): void 
     process.exit(1);
   });
 };
+
 export const disconnect = (): void => {
   if (!database) {
     return;
