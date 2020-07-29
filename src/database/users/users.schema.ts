@@ -1,6 +1,5 @@
 import { findByUserName, findOneOrCreate } from './users.statics';
 
-import GameSchema from '../games/games.schema';
 import { Schema } from 'mongoose';
 import { setLastUpdated } from './users.methods';
 
@@ -9,7 +8,7 @@ const UserSchema = new Schema({
   firstName: String,
   lastName: String,
   userName: String,
-  subscriptions: [GameSchema],
+  subscriptions: [{ type: Schema.Types.ObjectId, ref: 'Game' }],
   dateOfRegistry: Date,
   dateOfEntry: {
     type: Date,

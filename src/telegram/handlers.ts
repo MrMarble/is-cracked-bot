@@ -1,7 +1,4 @@
-import {
-  BotCommand,
-  InlineQueryResultArticle,
-} from 'telegraf/typings/telegram-types';
+import { BotCommand, InlineQueryResult, InlineQueryResultArticle } from 'telegraf/typings/telegram-types';
 import { getGame, searchGame } from '../crackwatch/methods';
 
 import { Channel } from './../utils/channel';
@@ -50,10 +47,7 @@ function handleStart(ctx: CustomContext): void {
     ctx.state.user.dateOfRegistry = new Date();
     ctx.state.user.save();
   }
-  ctx.reply(
-    'Telegram bot made by <a href="tg://user?id=256671105">MrMarble</a>',
-    { parse_mode: 'HTML' },
-  );
+  ctx.reply('Telegram bot made by <a href="tg://user?id=256671105">MrMarble</a>', { parse_mode: 'HTML' });
 }
 
 async function handleGetGameInfo(ctx: CustomContext): Promise<void> {
@@ -88,26 +82,23 @@ async function handleSearchGame(ctx: CustomContext): Promise<void> {
   if (query) {
     ctx.reply(`buscamos el juego ${query}`);
   } else {
-    ctx.reply(
-      `para buscar de manera dinamica usa @${ctx.me} <nombre a buscar>`,
-      {
-        reply_markup: Markup.inlineKeyboard([
-          Markup.switchToCurrentChatButton('Buscar', 'search'),
-        ]),
-      },
-    );
+    ctx.reply(`para buscar de manera dinamica usa @${ctx.me} <nombre a buscar>`, {
+      reply_markup: Markup.inlineKeyboard([Markup.switchToCurrentChatButton('Buscar', 'search')]),
+    });
   }
 }
 
+/**
+ * Inline query global handler
+ */
 export async function handleInlineQuery(ctx: CustomContext): Promise<void> {
   logger.info('handle inline query', {
     module: 'telegram/handlers',
     from: ctx.from.id,
     query: ctx.inlineQuery.query,
   });
-  let results: InlineQueryResultArticle[] = [];
   if (ctx.inlineQuery.query.length < 3) {
-    results = [
+    const results: Array<InlineQueryResult> = [
       {
         type: 'article',
         title: 'Escribe 3 caracteres para empezar a buscar',
@@ -118,36 +109,48 @@ export async function handleInlineQuery(ctx: CustomContext): Promise<void> {
         },
       },
     ];
+    ctx.answerInlineQuery(results);
   } else {
-    let games = await GameModel.findByName(ctx.inlineQuery.query);
-    if (games.length == 0) {
-      const chnl = new Channel<IGameDocument[]>();
-      searchGame(ctx.inlineQuery.query, chnl);
-      games = await chnl.recv();
-      chnl.close();
-    }
-    for (const game of games) {
-      results.push({
-        type: 'article',
-        title: game.title,
-        id: game.id,
-        thumb_url: game.image,
-        thumb_height: 524,
-        thumb_width: 933,
-        input_message_content: {
-          message_text: game.getGameCard(),
-          parse_mode: 'HTML',
-        },
-        reply_markup: Markup.inlineKeyboard([
-          Markup.callbackButton('♻️ Update', `update:${game.id}`),
-        ]),
-      });
-    }
+    handleSearchQuery(ctx);
+  }
+}
+/**
+ * Inline query search handler
+ */
+async function handleSearchQuery(ctx: CustomContext): Promise<void> {
+  let games = await GameModel.findByName(ctx.inlineQuery.query);
+  if (games.length == 0) {
+    const chnl = new Channel<IGameDocument[]>();
+    searchGame(ctx.inlineQuery.query, chnl);
+    games = await chnl.recv();
+    chnl.close();
+  }
+  const results: InlineQueryResultArticle[] = [];
+  for (const game of games) {
+    results.push({
+      type: 'article',
+      title: game.title,
+      id: game.id,
+      thumb_url: game.image,
+      thumb_height: 524,
+      thumb_width: 933,
+      input_message_content: {
+        message_text: game.getGameCard(),
+        parse_mode: 'HTML',
+      },
+      reply_markup: Markup.inlineKeyboard([
+        [
+          Markup.callbackButton('🔔 Subscribe', `sub:${game.id}`),
+          Markup.callbackButton('🔕 Unsuscribe', `unsub:${game.id}`),
+        ],
+        [Markup.callbackButton('♻️ Update', `update:${game.id}`)],
+      ]),
+    });
   }
   ctx.answerInlineQuery(results.slice(0, 50), { cache_time: 24 * 60 * 60 });
 }
 
-export async function handleCallbackQuery(ctx: CustomContext): Promise<void> {
+export async function handleCallbackQuery(ctx: CustomContext): Promise<void | boolean> {
   logger.info('handle callback query', {
     from: ctx.callbackQuery.from.id,
     data: ctx.callbackQuery.data,
@@ -157,7 +160,8 @@ export async function handleCallbackQuery(ctx: CustomContext): Promise<void> {
   switch (method) {
     case 'update': {
       let game = await GameModel.findById(payload).exec();
-      if (Date.now() - game.lastUpdated.getTime() > 1000 * 60 * 60 * 24) {
+      const lastUpdated = Date.now() - game.lastUpdated.getTime();
+      if (lastUpdated > 1000 * 60 * 60 * 24) {
         const chnl = new Channel<IGameDocument>();
         getGame(game.slug, chnl);
         game = await chnl.recv();
@@ -165,15 +169,46 @@ export async function handleCallbackQuery(ctx: CustomContext): Promise<void> {
         ctx.editMessageText(game.getGameCard(), {
           parse_mode: 'HTML',
           reply_markup: Markup.inlineKeyboard([
-            Markup.callbackButton('♻️ Update', `update:${game.id}`),
+            [
+              Markup.callbackButton('🔔 Subscribe', `sub:${game.id}`),
+              Markup.callbackButton('🔕 Unsuscribe', `unsub:${game.id}`),
+            ],
+            [Markup.callbackButton('♻️ Update', `update:${game.id}`)],
           ]),
         });
+        ctx.answerCbQuery();
       } else {
-        ctx.answerCbQuery('Already updated!', false, {});
+        ctx.answerCbQuery('Already updated!', false, { cache_time: (1000 * 60 * 60 * 24 - lastUpdated) / 1000 });
       }
       break;
     }
-
+    case 'sub': {
+      if (!ctx.state.user.dateOfRegistry) {
+        return ctx.answerCbQuery('Start the bot first!', true);
+      }
+      const user = await ctx.state.user.populate('subscriptions').execPopulate();
+      if (user.subscriptions.find((g) => g.id == payload)) {
+        return ctx.answerCbQuery('Already subscribed!', false);
+      }
+      ctx.state.user.subscriptions.push(await GameModel.findById(payload).exec());
+      ctx.state.user.save();
+      ctx.answerCbQuery('Subscribed!', true);
+      break;
+    }
+    case 'unsub': {
+      if (!ctx.state.user.dateOfRegistry) {
+        return ctx.answerCbQuery('Start the bot first!', true);
+      }
+      const user = await ctx.state.user.populate('subscriptions').execPopulate();
+      const index = user.subscriptions.findIndex((g) => g.id == payload);
+      if (~index) {
+        ctx.state.user.subscriptions.splice(index, 1);
+        ctx.state.user.save();
+        return ctx.answerCbQuery('Unsubscribed!', true);
+      }
+      ctx.answerCbQuery('You are not subscribed!', false);
+      break;
+    }
     default:
       break;
   }

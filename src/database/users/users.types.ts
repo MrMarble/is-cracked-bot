@@ -1,13 +1,13 @@
 import { Document, Model } from 'mongoose';
 
-import { IGame } from '../games/games.types';
+import { IGameDocument } from './../games/games.types';
 
 export interface IUser {
   userId: number;
   firstName: string;
   lastName?: string;
   userName?: string;
-  subscriptions?: Array<IGame>;
+  subscriptions?: Array<IGameDocument>;
   dateOfEntry?: Date;
   dateOfRegistry?: Date;
   lastUpdated?: Date;
