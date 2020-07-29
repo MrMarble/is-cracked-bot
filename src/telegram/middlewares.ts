@@ -1,8 +1,9 @@
 import { CustomContext } from './telegram';
+import { MemoryStore } from '../utils/memory-store';
 import { UserModel } from './../database/users/users.model';
 import { logger } from '../main';
 
-export const middlewares = [loggerWare, createUserWare];
+export const middlewares = [rateLimitWare, loggerWare, createUserWare];
 
 async function loggerWare(ctx: CustomContext, next: () => Promise<void>): Promise<void> {
   logger.debug('update received', {
@@ -30,4 +31,17 @@ async function createUserWare(ctx: CustomContext, next: () => Promise<void>): Pr
     });
   }
   next();
+}
+
+const store = new MemoryStore(1500);
+async function rateLimitWare(ctx: CustomContext, next: () => Promise<void>): Promise<void> {
+  const key: string = ctx.from?.id.toString();
+  if (!key) {
+    return next();
+  }
+  const hit = store.incr(key);
+  if (hit <= 1) {
+    return next();
+  }
+  return;
 }
