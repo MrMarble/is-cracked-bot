@@ -14,6 +14,7 @@ export const connect = (username: string, password: string, host: string): void 
       useFindAndModify: true,
       useUnifiedTopology: true,
       useCreateIndex: true,
+      dbName: 'crackwatch',
     });
     database = mongoose.connection;
   } catch (err) {
