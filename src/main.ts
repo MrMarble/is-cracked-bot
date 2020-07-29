@@ -10,7 +10,7 @@ export let bot: Telegraf<CustomContext>;
 
 // Configure logger
 export const logger = createLogger({
-  level: 'debug',
+  level: 'info',
   format: format.combine(format.timestamp(), format.json()),
   transports: [
     new transports.Console({
