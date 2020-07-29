@@ -180,6 +180,10 @@ export async function handleCallbackQuery(ctx: CustomContext): Promise<void | bo
   switch (method) {
     case 'update': {
       let game = await GameModel.findById(payload).exec();
+      if (!game) {
+        ctx.answerCbQuery('something went worng', false);
+        logger.error('tried to update inexistent game', { user: ctx.callbackQuery.from.id, game: payload });
+      }
       const lastUpdated = Date.now() - game.lastUpdated.getTime();
       if (lastUpdated > 1000 * 60 * 60 * 24) {
         const chnl = new Channel<IGameDocument>();
