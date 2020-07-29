@@ -8,6 +8,7 @@ import { middlewares } from './middlewares';
 
 export interface CustomContext extends TelegrafContext {
   state: { user: IUserDocument };
+  startPayload?: string;
 }
 
 let bot: Telegraf<CustomContext>;

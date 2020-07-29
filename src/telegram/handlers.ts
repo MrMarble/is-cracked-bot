@@ -37,7 +37,7 @@ export const Commands: Array<Command> = [
   },
 ];
 
-function handleStart(ctx: CustomContext): void {
+async function handleStart(ctx: CustomContext): Promise<void> {
   logger.info('handle start command', {
     module: 'telegram/handlers',
     from: ctx.from.id,
@@ -45,7 +45,23 @@ function handleStart(ctx: CustomContext): void {
   if (!ctx.state.user.dateOfRegistry) {
     logger.info('user registered', { user: ctx.state.user.userId });
     ctx.state.user.dateOfRegistry = new Date();
-    ctx.state.user.save();
+    await ctx.state.user.save();
+  }
+  ctx.startPayload = ctx.message.text.substring(7);
+  if (ctx.startPayload) {
+    const [method, payload] = ctx.startPayload.split('_');
+    switch (method) {
+      case 'sub':
+        handleSub(ctx, payload);
+        ctx.reply('Subscribed!');
+        break;
+      case 'unsub':
+        handleSub(ctx, payload);
+        ctx.reply('Unsubscribed!');
+        break;
+      default:
+        break;
+    }
   }
   ctx.reply('Telegram bot made by <a href="tg://user?id=256671105">MrMarble</a>', { parse_mode: 'HTML' });
 }
@@ -114,6 +130,7 @@ export async function handleInlineQuery(ctx: CustomContext): Promise<void> {
     handleSearchQuery(ctx);
   }
 }
+
 /**
  * Inline query search handler
  */
@@ -150,6 +167,9 @@ async function handleSearchQuery(ctx: CustomContext): Promise<void> {
   ctx.answerInlineQuery(results.slice(0, 50), { cache_time: 24 * 60 * 60 });
 }
 
+/**
+ * InlineKeyboard Callbkack handler
+ */
 export async function handleCallbackQuery(ctx: CustomContext): Promise<void | boolean> {
   logger.info('handle callback query', {
     from: ctx.callbackQuery.from.id,
@@ -184,26 +204,23 @@ export async function handleCallbackQuery(ctx: CustomContext): Promise<void | bo
     }
     case 'sub': {
       if (!ctx.state.user.dateOfRegistry) {
-        return ctx.answerCbQuery('Start the bot first!', true);
+        return ctx.answerCbQuery('', false, {
+          url: `t.me/${ctx.botInfo.username}?start=sub_${payload}`,
+        });
       }
-      const user = await ctx.state.user.populate('subscriptions').execPopulate();
-      if (user.subscriptions.find((g) => g.id == payload)) {
-        return ctx.answerCbQuery('Already subscribed!', false);
+      if (await handleSub(ctx, payload)) {
+        return ctx.answerCbQuery('Subscribed!', true);
       }
-      ctx.state.user.subscriptions.push(await GameModel.findById(payload).exec());
-      ctx.state.user.save();
-      ctx.answerCbQuery('Subscribed!', true);
+      ctx.answerCbQuery('Already subscribed!', false);
       break;
     }
     case 'unsub': {
       if (!ctx.state.user.dateOfRegistry) {
-        return ctx.answerCbQuery('Start the bot first!', true);
+        return ctx.answerCbQuery('', false, {
+          url: `t.me/${ctx.botInfo.username}?start=unsub_${payload}`,
+        });
       }
-      const user = await ctx.state.user.populate('subscriptions').execPopulate();
-      const index = user.subscriptions.findIndex((g) => g.id == payload);
-      if (~index) {
-        ctx.state.user.subscriptions.splice(index, 1);
-        ctx.state.user.save();
+      if (await handleUnsub(ctx, payload)) {
         return ctx.answerCbQuery('Unsubscribed!', true);
       }
       ctx.answerCbQuery('You are not subscribed!', false);
@@ -212,4 +229,31 @@ export async function handleCallbackQuery(ctx: CustomContext): Promise<void | bo
     default:
       break;
   }
+}
+
+/**
+ * Aux function to subscribe an User to a game
+ */
+async function handleSub(ctx: CustomContext, gameId: string): Promise<boolean> {
+  const user = await ctx.state.user.populate('subscriptions').execPopulate();
+  if (user.subscriptions.find((g) => g.id == gameId)) {
+    return false;
+  }
+  ctx.state.user.subscriptions.push(await GameModel.findById(gameId).exec());
+  ctx.state.user.save();
+  return true;
+}
+
+/**
+ * Aux function to unsubscribe an User to a game
+ */
+async function handleUnsub(ctx: CustomContext, gameId: string): Promise<boolean> {
+  const user = await ctx.state.user.populate('subscriptions').execPopulate();
+  const index = user.subscriptions.findIndex((g) => g.id == gameId);
+  if (~index) {
+    ctx.state.user.subscriptions.splice(index, 1);
+    ctx.state.user.save();
+    return true;
+  }
+  return false;
 }
