@@ -15,7 +15,10 @@
     "noUnusedParameters": true,
     "noImplicitAny": false,
     "noImplicitThis": false,
-    "strictNullChecks": false
+    "strictNullChecks": false,
+    "lib": [
+      "ES2019"
+    ]
   },
   "include": [
     "src/**/*",

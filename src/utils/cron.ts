@@ -6,7 +6,7 @@ import { getGame } from '../crackwatch/methods';
 import { logger } from '../main';
 import { setInterval } from 'timers';
 
-const schedule = 30 * 1000;
+const schedule = Number.parseInt(process.env.CRACKWATCH_SCHEDULE) ?? 60 * 60 * 1000; // Default 1h
 
 async function task(): Promise<void> {
   logger.info('cron: scheduled task started');
