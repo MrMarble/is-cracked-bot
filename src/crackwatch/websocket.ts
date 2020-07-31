@@ -1,6 +1,6 @@
 import * as WebSocket from 'ws';
 
-import { getUri, idGenerator } from './utils';
+import { getUri, idGenerator } from '../utils/utils';
 import { handleErr, handleMessage, handleOpen } from './handlers';
 
 import { logger } from './../main';

@@ -1,6 +1,6 @@
 import * as WebSocket from 'ws';
 
-import { parseResponse, responseToString } from './utils';
+import { parseResponse, responseToString } from '../utils/utils';
 
 import { logger } from '../main';
 

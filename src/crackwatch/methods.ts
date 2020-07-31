@@ -1,7 +1,7 @@
 import * as WebSocket from 'ws';
 
 import { idGen, ws } from './websocket';
-import { parseResponse, responseToString } from './utils';
+import { parseResponse, responseToString } from '../utils/utils';
 
 import { Channel } from '../utils/channel';
 import { GameModel } from './../database/games/games.model';
