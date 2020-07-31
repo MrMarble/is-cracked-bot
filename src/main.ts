@@ -5,6 +5,7 @@ import { createLogger, format, transports } from 'winston';
 
 import { Telegraf } from 'telegraf';
 import { config } from 'dotenv';
+import { startTask } from './utils/cron';
 
 export let bot: Telegraf<CustomContext>;
 
@@ -45,6 +46,9 @@ connectWS();
 
 // Close connection before exiting
 process.on('beforeExit', () => closeWS());
+
+// Start the cron job
+startTask();
 
 // Start the bot
 newBot(process.env.CRACKWATCH_TOKEN)
