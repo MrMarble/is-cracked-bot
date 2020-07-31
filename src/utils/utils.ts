@@ -1,6 +1,8 @@
 import * as WebSocket from 'ws';
 
-import { SocketResponse } from './types';
+import { InlineKeyboardMarkup } from 'telegraf/typings/telegram-types';
+import { Markup } from 'telegraf';
+import { SocketResponse } from '../crackwatch/types';
 
 export function getUri(): string {
   return `wss://crackwatch.com/sockjs/${getRandomNumber()}/${getRandomString()}/websocket`;
@@ -39,4 +41,11 @@ export function parseResponse(response: string | WebSocket.Data): SocketResponse
     }
   }
   return { msg: '' };
+}
+
+export function getGameKeyboard(gameId: number): InlineKeyboardMarkup {
+  return Markup.inlineKeyboard([
+    [Markup.callbackButton('🔔 Subscribe', `sub:${gameId}`), Markup.callbackButton('🔕 Unsuscribe', `unsub:${gameId}`)],
+    [Markup.callbackButton('♻️ Update', `update:${gameId}`)],
+  ]);
 }
