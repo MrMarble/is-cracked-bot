@@ -6,6 +6,7 @@ import { CustomContext } from './telegram';
 import { GameModel } from '../database/games/games.model';
 import { IGameDocument } from './../database/games/games.types';
 import { Markup } from 'telegraf';
+import { getGameKeyboard } from '../utils/utils';
 import { logger } from '../main';
 
 interface Command {
@@ -155,13 +156,7 @@ async function handleSearchQuery(ctx: CustomContext): Promise<void> {
         message_text: game.getGameCard(),
         parse_mode: 'HTML',
       },
-      reply_markup: Markup.inlineKeyboard([
-        [
-          Markup.callbackButton('🔔 Subscribe', `sub:${game.id}`),
-          Markup.callbackButton('🔕 Unsuscribe', `unsub:${game.id}`),
-        ],
-        [Markup.callbackButton('♻️ Update', `update:${game.id}`)],
-      ]),
+      reply_markup: game.isCracked() ? undefined : getGameKeyboard(game.id),
     });
   }
   ctx.answerInlineQuery(results.slice(0, 50), { cache_time: 24 * 60 * 60 });
@@ -192,13 +187,7 @@ export async function handleCallbackQuery(ctx: CustomContext): Promise<void | bo
         chnl.close();
         ctx.editMessageText(game.getGameCard(), {
           parse_mode: 'HTML',
-          reply_markup: Markup.inlineKeyboard([
-            [
-              Markup.callbackButton('🔔 Subscribe', `sub:${game.id}`),
-              Markup.callbackButton('🔕 Unsuscribe', `unsub:${game.id}`),
-            ],
-            [Markup.callbackButton('♻️ Update', `update:${game.id}`)],
-          ]),
+          reply_markup: game.isCracked() ? undefined : getGameKeyboard(game.id),
         });
         ctx.answerCbQuery();
       } else {
@@ -240,7 +229,7 @@ export async function handleCallbackQuery(ctx: CustomContext): Promise<void | bo
  */
 async function handleSub(ctx: CustomContext, gameId: string): Promise<boolean> {
   const user = await ctx.state.user.populate('subscriptions').execPopulate();
-  if (user.subscriptions.find((g) => g.id == gameId)) {
+  if (user.subscriptions.find((g) => g?.id == gameId)) {
     return false;
   }
   ctx.state.user.subscriptions.push(await GameModel.findById(gameId).exec());
@@ -253,7 +242,7 @@ async function handleSub(ctx: CustomContext, gameId: string): Promise<boolean> {
  */
 async function handleUnsub(ctx: CustomContext, gameId: string): Promise<boolean> {
   const user = await ctx.state.user.populate('subscriptions').execPopulate();
-  const index = user.subscriptions.findIndex((g) => g.id == gameId);
+  const index = user.subscriptions.findIndex((g) => g?.id == gameId);
   if (~index) {
     ctx.state.user.subscriptions.splice(index, 1);
     ctx.state.user.save();
