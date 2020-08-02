@@ -19,8 +19,8 @@ search_command: |
   To search in a more dynamic way use the inline method.
   That way you can see the games as you type the name
   Examples:
-    <code>\t@${me} minecraft</code>
-    <code>\t@${me} Death str</code> &lt;- don't need to type the full name
+    <code>@${me} minecraft</code>
+    <code>@${me} Death str</code> &lt;- don't need to type the full name
   Click the button below to get it going
 
 subscribe_first: Subscribe to a game first!
