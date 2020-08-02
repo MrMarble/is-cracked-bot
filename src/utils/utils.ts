@@ -1,5 +1,8 @@
 import * as WebSocket from 'ws';
 
+import { CustomContext } from '../telegram/telegram';
+import { GameModel } from '../database/games/games.model';
+import { IGameDocument } from '../database/games/games.types';
 import { InlineKeyboardMarkup } from 'telegraf/typings/telegram-types';
 import { Markup } from 'telegraf';
 import { SocketResponse } from '../crackwatch/types';
@@ -48,4 +51,32 @@ export function getGameKeyboard(gameId: number): InlineKeyboardMarkup {
     [Markup.callbackButton('🔔 Subscribe', `sub:${gameId}`), Markup.callbackButton('🔕 Unsuscribe', `unsub:${gameId}`)],
     [Markup.callbackButton('♻️ Update', `update:${gameId}`)],
   ]);
+}
+
+/**
+ * Aux function to subscribe an User to a game
+ */
+export async function handleSub(ctx: CustomContext, gameId: string): Promise<IGameDocument> {
+  const user = await ctx.state.user.populate('subscriptions').execPopulate();
+  if (user.subscriptions.find((g) => g?.id == gameId)) {
+    return null;
+  }
+  const game = await GameModel.findById(gameId).exec();
+  ctx.state.user.subscriptions.push(game);
+  ctx.state.user.save();
+  return game;
+}
+
+/**
+ * Aux function to unsubscribe an User to a game
+ */
+export async function handleUnsub(ctx: CustomContext, gameId: string): Promise<boolean> {
+  const user = await ctx.state.user.populate('subscriptions').execPopulate();
+  const index = user.subscriptions.findIndex((g) => g?.id == gameId);
+  if (~index) {
+    ctx.state.user.subscriptions.splice(index, 1);
+    ctx.state.user.save();
+    return true;
+  }
+  return false;
 }
