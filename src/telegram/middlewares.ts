@@ -37,7 +37,7 @@ async function createUserWare(ctx: CustomContext, next: () => Promise<void>): Pr
 const store = new MemoryStore(1500);
 async function rateLimitWare(ctx: CustomContext, next: () => Promise<void>): Promise<void> {
   const key: string = ctx.from?.id.toString();
-  if (!key) {
+  if (!key || ctx.callbackQuery) {
     return next();
   }
   const hit = store.incr(key);

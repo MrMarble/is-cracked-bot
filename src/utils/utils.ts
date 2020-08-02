@@ -2,7 +2,8 @@ import * as WebSocket from 'ws';
 
 import { CustomContext } from '../telegram/telegram';
 import { GameModel } from '../database/games/games.model';
-import { IGameDocument } from '../database/games/games.types';
+import { IGameDocument } from './../database/games/games.types';
+import { InlineKeyboardButton } from 'telegraf/typings/markup';
 import { InlineKeyboardMarkup } from 'telegraf/typings/telegram-types';
 import { Markup } from 'telegraf';
 import { SocketResponse } from '../crackwatch/types';
@@ -79,4 +80,30 @@ export async function handleUnsub(ctx: CustomContext, gameId: string): Promise<b
     return true;
   }
   return false;
+}
+
+export async function getSubList(games: IGameDocument[], current?: string | number): Promise<InlineKeyboardMarkup> {
+  const itemsPerPage = 5;
+  const gameButtons = games.map((game) => [Markup.callbackButton(game.title, `info:${game.id}`)]);
+  const navigation: Array<InlineKeyboardButton> = [];
+  const buttons = [];
+  current = Number.parseInt(current?.toString()) || 0;
+
+  if (current != 0) {
+    navigation.push(Markup.callbackButton('⬅️ Prev', `list:${current - 1}`));
+  }
+
+  if (gameButtons.length > itemsPerPage + current * itemsPerPage) {
+    navigation.push(Markup.callbackButton('Next ➡️', `list:${current + 1}`));
+  }
+
+  buttons.push(...gameButtons.slice(current * itemsPerPage, itemsPerPage + current * itemsPerPage));
+  return Markup.inlineKeyboard([...buttons, navigation]);
+}
+
+export function getInfoKeyboard(gameId: string): InlineKeyboardMarkup {
+  return Markup.inlineKeyboard([
+    [Markup.callbackButton('🔕 Unsuscribe', `unsub:${gameId}`), Markup.callbackButton('♻️ Update', `update:${gameId}`)],
+    [Markup.callbackButton('↩️ Back to list', `list:0`)],
+  ]);
 }

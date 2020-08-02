@@ -1,9 +1,9 @@
 import { InlineQueryResult, InlineQueryResultArticle } from 'telegraf/typings/telegram-types';
 import { getGame, searchGame } from '../../crackwatch/methods';
-import { getGameKeyboard, handleSub, handleUnsub } from '../../utils/utils';
+import { getGameKeyboard, getInfoKeyboard, getSubList, handleSub, handleUnsub } from '../../utils/utils';
 
 import { Channel } from '../../utils/channel';
-import { CustomContext } from '../telegram';
+import { CustomContext } from './../telegram';
 import { GameModel } from '../../database/games/games.model';
 import { IGameDocument } from '../../database/games/games.types';
 import { logger } from '../../main';
@@ -12,12 +12,14 @@ export const QueryCallbacks: Record<string, (ctx: CustomContext, payload: string
   update: handleUpdateCallback,
   sub: handleSubCallback,
   unsub: handleUnsubCallback,
+  list: handleListCallback,
+  info: handleInfoCallback,
 };
 
 async function handleUpdateCallback(ctx: CustomContext, gameId: string): Promise<void> {
   let game = await GameModel.findById(gameId).exec();
   if (!game) {
-    ctx.answerCbQuery('something went worng', false);
+    ctx.answerCbQuery('something went wrong', false);
     logger.error('tried to update inexistent game', { user: ctx.callbackQuery.from.id, game: gameId });
   }
   const lastUpdated = Date.now() - game.lastUpdated.getTime();
@@ -88,7 +90,7 @@ async function handleSearchQuery(ctx: CustomContext): Promise<void> {
       reply_markup: game.isCracked() ? undefined : getGameKeyboard(game.id),
     });
   }
-  ctx.answerInlineQuery(results.slice(0, 50), { cache_time: 24 * 60 * 60 });
+  ctx.answerInlineQuery(results.slice(0, 50), { cache_time: 0 });
 }
 
 /**
@@ -134,4 +136,15 @@ export async function handleInlineQuery(ctx: CustomContext): Promise<void> {
   } else {
     handleSearchQuery(ctx);
   }
+}
+
+export async function handleListCallback(ctx: CustomContext, offset: string): Promise<void> {
+  const games = (await ctx.state.user.populate('subscriptions').execPopulate()).subscriptions;
+  ctx.editMessageReplyMarkup(await getSubList(games, offset));
+}
+
+export async function handleInfoCallback(ctx: CustomContext, gameId: string): Promise<void> {
+  const games = (await ctx.state.user.populate('subscriptions').execPopulate()).subscriptions;
+  const selectedGame = games.filter((g) => g.id == gameId)[0];
+  ctx.editMessageText(selectedGame.getGameCard(), { reply_markup: getInfoKeyboard(gameId), parse_mode: 'HTML' });
 }

@@ -1,8 +1,8 @@
-import { getGameKeyboard, handleSub } from '../../utils/utils';
+import { getGameKeyboard, getSubList, handleSub } from '../../utils/utils';
 
 import { BotCommand } from 'telegraf/typings/telegram-types';
 import { Channel } from '../../utils/channel';
-import { CustomContext } from '../telegram';
+import { CustomContext } from './../telegram';
 import { GameModel } from '../../database/games/games.model';
 import { IGameDocument } from '../../database/games/games.types';
 import { Markup } from 'telegraf';
@@ -19,14 +19,21 @@ export const Commands: Array<Command> = [
     handler: handleStart,
     command: {
       command: 'start',
-      description: 'Displays info about the bot',
+      description: 'Displays info about the bot.',
     },
   },
   {
     handler: handleSearchGame,
     command: {
       command: 'search',
-      description: '<game name> Displays results for a name search',
+      description: '<game name> Displays results for a name search.',
+    },
+  },
+  {
+    handler: handleSubs,
+    command: {
+      command: 'subscriptions',
+      description: 'Shows your current subscriptions.',
     },
   },
 ];
@@ -122,4 +129,20 @@ async function handleSearchGame(ctx: CustomContext): Promise<void> {
       },
     );
   }
+}
+
+async function handleSubs(ctx: CustomContext): Promise<void> {
+  logger.info('handle subs command', {
+    module: 'telegram/handlers',
+    from: ctx.from.id,
+    text: ctx.message.text,
+  });
+
+  if (ctx.state.user.subscriptions.length == 0) {
+    ctx.reply('Subscribe to a game first!');
+    return;
+  }
+
+  const games = (await ctx.state.user.populate('subscriptions').execPopulate()).subscriptions;
+  ctx.reply('You are subscribed to:', { reply_markup: await getSubList(games) });
 }
