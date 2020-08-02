@@ -19,7 +19,7 @@ export const QueryCallbacks: Record<string, (ctx: CustomContext, payload: string
 async function handleUpdateCallback(ctx: CustomContext, gameId: string): Promise<void> {
   let game = await GameModel.findById(gameId).exec();
   if (!game) {
-    ctx.answerCbQuery('something went wrong', false);
+    ctx.answerCbQuery(ctx.i18n.t('error'), false);
     logger.error('tried to update inexistent game', { user: ctx.callbackQuery.from.id, game: gameId });
   }
   const lastUpdated = Date.now() - game.lastUpdated.getTime();
@@ -30,11 +30,11 @@ async function handleUpdateCallback(ctx: CustomContext, gameId: string): Promise
     chnl.close();
     ctx.editMessageText(game.getGameCard(), {
       parse_mode: 'HTML',
-      reply_markup: game.isCracked() ? undefined : getGameKeyboard(game.id),
+      reply_markup: game.isCracked() ? undefined : getGameKeyboard(ctx, game.id),
     });
     ctx.answerCbQuery();
   } else {
-    ctx.answerCbQuery('Already updated!', false, { cache_time: (1000 * 60 * 60 * 24 - lastUpdated) / 1000 });
+    ctx.answerCbQuery(ctx.i18n.t('updated'), false, { cache_time: (1000 * 60 * 60 * 24 - lastUpdated) / 1000 });
   }
 }
 
@@ -46,20 +46,20 @@ async function handleSubCallback(ctx: CustomContext, gameId: string): Promise<bo
   }
 
   if (await handleSub(ctx, gameId)) {
-    return ctx.answerCbQuery('Subscribed!', true);
+    return ctx.answerCbQuery(ctx.i18n.t('subscribed'), true);
   }
 
-  return ctx.answerCbQuery('Already subscribed!', false);
+  return ctx.answerCbQuery(ctx.i18n.t('already_subscribed'), false);
 }
 
 async function handleUnsubCallback(ctx: CustomContext, gameId: string): Promise<boolean> {
   if (!ctx.state.user.dateOfRegistry) {
-    return ctx.answerCbQuery('You are not using the bot!', false);
+    return ctx.answerCbQuery(ctx.i18n.t('not_using_bot'), false);
   }
   if (await handleUnsub(ctx, gameId)) {
-    return ctx.answerCbQuery('Unsubscribed!', true);
+    return ctx.answerCbQuery(ctx.i18n.t('unsubscribed'), true);
   }
-  return ctx.answerCbQuery('You are not subscribed!', false);
+  return ctx.answerCbQuery(ctx.i18n.t('already_subscribed'), false);
 }
 
 /**
@@ -87,7 +87,7 @@ async function handleSearchQuery(ctx: CustomContext): Promise<void> {
         message_text: game.getGameCard(),
         parse_mode: 'HTML',
       },
-      reply_markup: game.isCracked() ? undefined : getGameKeyboard(game.id),
+      reply_markup: game.isCracked() ? undefined : getGameKeyboard(ctx, game.id),
     });
   }
   ctx.answerInlineQuery(results.slice(0, 50), { cache_time: 0 });
@@ -106,28 +106,19 @@ export async function handleInlineQuery(ctx: CustomContext): Promise<void> {
     const results: Array<InlineQueryResult> = [
       {
         type: 'article',
-        title: 'IsCrackedBot',
-        description: 'Track crack status of a game',
+        title: ctx.i18n.t('inline_title'),
         id: 'info',
         input_message_content: {
-          message_text: [
-            'Telegram bot for <a href="https://crackwatch.com">crackwatch.com</a>',
-            'This bot will notify you when a game is cracked.',
-            "\nIt <b>DOESN'T</b> provides any link to download them, only tracks the status",
-          ].join('\n'),
+          message_text: ctx.i18n.t('welcome', { me: ctx.me }),
           parse_mode: 'HTML',
         },
       },
       {
         type: 'article',
-        title: 'Type at least 3 characters to start searching',
+        title: ctx.i18n.t('inline_desc'),
         id: 'info1',
         input_message_content: {
-          message_text: [
-            'Telegram bot for <a href="https://crackwatch.com">crackwatch.com</a>',
-            'This bot will notify you when a game is cracked.',
-            "\nIt <b>DOESN'T</b> provides any link to download them, only tracks the status",
-          ].join('\n'),
+          message_text: ctx.i18n.t('welcome', { me: ctx.me }),
           parse_mode: 'HTML',
         },
       },
@@ -141,12 +132,12 @@ export async function handleInlineQuery(ctx: CustomContext): Promise<void> {
 export async function handleListCallback(ctx: CustomContext, offset: string): Promise<void> {
   const games = (await ctx.state.user.populate('subscriptions').execPopulate()).subscriptions;
   ctx.answerCbQuery();
-  ctx.editMessageReplyMarkup(await getSubList(games, offset));
+  ctx.editMessageReplyMarkup(await getSubList(ctx, games, offset));
 }
 
 export async function handleInfoCallback(ctx: CustomContext, gameId: string): Promise<void> {
   const games = (await ctx.state.user.populate('subscriptions').execPopulate()).subscriptions;
   const selectedGame = games.filter((g) => g.id == gameId)[0];
   ctx.answerCbQuery();
-  ctx.editMessageText(selectedGame.getGameCard(), { reply_markup: getInfoKeyboard(gameId), parse_mode: 'HTML' });
+  ctx.editMessageText(selectedGame.getGameCard(), { reply_markup: getInfoKeyboard(ctx, gameId), parse_mode: 'HTML' });
 }

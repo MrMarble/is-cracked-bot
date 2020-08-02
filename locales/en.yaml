@@ -1,0 +1,48 @@
+welcome: |
+  This telegram bot tracks crack status of games so you don't have to!
+
+  You can subscribe to multiple games and I will notify you when a crack is available
+
+  I <b>DON'T</b> provide any download link or such.
+  Start using the bot with this example:
+    <code>@${me} cyberpunk</code>
+
+search_multiple_results: |
+  Seems like there are multiple results for <code>${query}</code>
+  Use this button to search through them
+
+search_multiple_results_button: Results fro ${query}
+
+no_results: Could not find anything for ${query}
+
+search_command: |
+  To search in a more dynamic way use the inline method.
+  That way you can see the games as you type the name
+  Examples:
+    <code>\t@${me} minecraft</code>
+    <code>\t@${me} Death str</code> &lt;- don't need to type the full name
+  Click the button below to get it going
+
+subscribe_first: Subscribe to a game first!
+subscribed: Subscribed!
+already_subscribed: Already subscribed!
+unsubscribed: Unsubscribed!
+not_subscribed: You are not Subscribed!
+subscribed_to: Subscribed to ${title}!
+subs_command: 'You are subscribed to:'
+
+error: Something went wrong :(
+updated: Already updated!
+
+not_using_bot: You are not using the bot!
+
+inline_title: Track crack status of a game
+inline_desc: Type at least 3 characters to start searching
+
+buttons:
+  subscribe: 🔔 Subscribe
+  unsubscribe: 🔕 Unsubscribe
+  update: ♻️ Update
+  next: Next ➡️
+  prev: ⬅️ Prev
+  back: ↩️ Back to list

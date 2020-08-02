@@ -1,12 +1,11 @@
-import * as WebSocket from 'ws';
-
-import { CustomContext } from '../telegram/telegram';
+import { CustomContext } from './../telegram/telegram';
 import { GameModel } from '../database/games/games.model';
 import { IGameDocument } from './../database/games/games.types';
 import { InlineKeyboardButton } from 'telegraf/typings/markup';
 import { InlineKeyboardMarkup } from 'telegraf/typings/telegram-types';
 import { Markup } from 'telegraf';
 import { SocketResponse } from '../crackwatch/types';
+import WebSocket from 'ws';
 
 export function getUri(): string {
   return `wss://crackwatch.com/sockjs/${getRandomNumber()}/${getRandomString()}/websocket`;
@@ -47,10 +46,13 @@ export function parseResponse(response: string | WebSocket.Data): SocketResponse
   return { msg: '' };
 }
 
-export function getGameKeyboard(gameId: number): InlineKeyboardMarkup {
+export function getGameKeyboard(ctx: CustomContext, gameId: number): InlineKeyboardMarkup {
   return Markup.inlineKeyboard([
-    [Markup.callbackButton('🔔 Subscribe', `sub:${gameId}`), Markup.callbackButton('🔕 Unsuscribe', `unsub:${gameId}`)],
-    [Markup.callbackButton('♻️ Update', `update:${gameId}`)],
+    [
+      Markup.callbackButton(ctx.i18n.t('buttons.subscribe'), `sub:${gameId}`),
+      Markup.callbackButton(ctx.i18n.t('buttons.unsubscribe'), `unsub:${gameId}`),
+    ],
+    [Markup.callbackButton(ctx.i18n.t('buttons.update'), `update:${gameId}`)],
   ]);
 }
 
@@ -82,7 +84,11 @@ export async function handleUnsub(ctx: CustomContext, gameId: string): Promise<b
   return false;
 }
 
-export async function getSubList(games: IGameDocument[], current?: string | number): Promise<InlineKeyboardMarkup> {
+export async function getSubList(
+  { i18n }: CustomContext,
+  games: IGameDocument[],
+  current?: string | number,
+): Promise<InlineKeyboardMarkup> {
   const itemsPerPage = 5;
   const gameButtons = games.map((game) => [Markup.callbackButton(game.title, `info:${game.id}`)]);
   const navigation: Array<InlineKeyboardButton> = [];
@@ -90,20 +96,23 @@ export async function getSubList(games: IGameDocument[], current?: string | numb
   current = Number.parseInt(current?.toString()) || 0;
 
   if (current != 0) {
-    navigation.push(Markup.callbackButton('⬅️ Prev', `list:${current - 1}`));
+    navigation.push(Markup.callbackButton(i18n.t('buttons.prev'), `list:${current - 1}`));
   }
 
   if (gameButtons.length > itemsPerPage + current * itemsPerPage) {
-    navigation.push(Markup.callbackButton('Next ➡️', `list:${current + 1}`));
+    navigation.push(Markup.callbackButton(i18n.t('buttons.next'), `list:${current + 1}`));
   }
 
   buttons.push(...gameButtons.slice(current * itemsPerPage, itemsPerPage + current * itemsPerPage));
   return Markup.inlineKeyboard([...buttons, navigation]);
 }
 
-export function getInfoKeyboard(gameId: string): InlineKeyboardMarkup {
+export function getInfoKeyboard({ i18n }: CustomContext, gameId: string): InlineKeyboardMarkup {
   return Markup.inlineKeyboard([
-    [Markup.callbackButton('🔕 Unsuscribe', `unsub:${gameId}`), Markup.callbackButton('♻️ Update', `update:${gameId}`)],
-    [Markup.callbackButton('↩️ Back to list', `list:0`)],
+    [
+      Markup.callbackButton(i18n.t('buttons.unsubscribe'), `unsub:${gameId}`),
+      Markup.callbackButton(i18n.t('buttons.update'), `update:${gameId}`),
+    ],
+    [Markup.callbackButton(i18n.t('buttons.back'), `list:0`)],
   ]);
 }
