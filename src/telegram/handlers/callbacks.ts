@@ -140,11 +140,13 @@ export async function handleInlineQuery(ctx: CustomContext): Promise<void> {
 
 export async function handleListCallback(ctx: CustomContext, offset: string): Promise<void> {
   const games = (await ctx.state.user.populate('subscriptions').execPopulate()).subscriptions;
+  ctx.answerCbQuery();
   ctx.editMessageReplyMarkup(await getSubList(games, offset));
 }
 
 export async function handleInfoCallback(ctx: CustomContext, gameId: string): Promise<void> {
   const games = (await ctx.state.user.populate('subscriptions').execPopulate()).subscriptions;
   const selectedGame = games.filter((g) => g.id == gameId)[0];
+  ctx.answerCbQuery();
   ctx.editMessageText(selectedGame.getGameCard(), { reply_markup: getInfoKeyboard(gameId), parse_mode: 'HTML' });
 }
