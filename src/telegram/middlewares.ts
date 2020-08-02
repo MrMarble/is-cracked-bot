@@ -1,9 +1,10 @@
 import { CustomContext } from './telegram';
 import { MemoryStore } from '../utils/memory-store';
+import { QueryCallbacks } from './handlers/callbacks';
 import { UserModel } from './../database/users/users.model';
 import { logger } from '../main';
 
-export const middlewares = [rateLimitWare, loggerWare, createUserWare];
+export const middlewares = [rateLimitWare, loggerWare, createUserWare, menuWare];
 
 async function loggerWare(ctx: CustomContext, next: () => Promise<void>): Promise<void> {
   logger.debug('update received', {
@@ -44,4 +45,21 @@ async function rateLimitWare(ctx: CustomContext, next: () => Promise<void>): Pro
     return next();
   }
   return;
+}
+
+async function menuWare(ctx: CustomContext, next: () => Promise<void>): Promise<void> {
+  if (!ctx.callbackQuery) return next();
+
+  logger.info('handle callback query', {
+    from: ctx.callbackQuery.from.id,
+    data: ctx.callbackQuery.data,
+  });
+
+  const [method, payload] = ctx.callbackQuery.data.split(':');
+  if (method in QueryCallbacks) {
+    QueryCallbacks[method](ctx, payload);
+  } else {
+    logger.error('callback function not registered', { method, payload });
+  }
+  return next();
 }
