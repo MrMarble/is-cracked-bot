@@ -1,7 +1,6 @@
-import * as WebSocket from 'ws';
-
 import { Channel } from '../utils/channel';
 import { IGameDocument } from './../database/games/games.types';
+import WebSocket from 'ws';
 
 export interface SocketResponse {
   msg?: string;

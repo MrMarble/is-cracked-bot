@@ -38,6 +38,7 @@
     "mongoose": "^5.9.25",
     "node-fetch": "^2.6.0",
     "telegraf": "^3.38.0",
+    "telegraf-i18n": "^6.6.0",
     "winston": "^3.3.3",
     "ws": "^7.3.1"
   },

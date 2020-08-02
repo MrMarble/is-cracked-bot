@@ -1,6 +1,5 @@
-import * as mongoose from 'mongoose';
-
 import { logger } from './../main';
+import mongoose from 'mongoose';
 
 let database: mongoose.Connection;
 export const connect = (username: string, password: string, host: string): void => {

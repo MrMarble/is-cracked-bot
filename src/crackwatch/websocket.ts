@@ -1,8 +1,7 @@
-import * as WebSocket from 'ws';
-
 import { getUri, idGenerator } from '../utils/utils';
 import { handleErr, handleMessage, handleOpen } from './handlers';
 
+import WebSocket from 'ws';
 import { logger } from './../main';
 
 export let ws: WebSocket; // Global websocket client

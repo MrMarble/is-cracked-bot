@@ -1,5 +1,3 @@
-import * as WebSocket from 'ws';
-
 import { idGen, ws } from './websocket';
 import { parseResponse, responseToString } from '../utils/utils';
 
@@ -7,6 +5,7 @@ import { Channel } from '../utils/channel';
 import { GameModel } from './../database/games/games.model';
 import { IGameDocument } from '../database/games/games.types';
 import { SocketResponse } from './types';
+import WebSocket from 'ws';
 import { logger } from '../main';
 
 export function getGame(slug: string, chnl: Channel<IGameDocument>): void {

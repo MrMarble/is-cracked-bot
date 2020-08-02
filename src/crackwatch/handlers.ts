@@ -1,7 +1,6 @@
-import * as WebSocket from 'ws';
-
 import { parseResponse, responseToString } from '../utils/utils';
 
+import WebSocket from 'ws';
 import { logger } from '../main';
 
 export function handleOpen(event: WebSocket.OpenEvent): void {
