@@ -20,7 +20,7 @@ async function task(): Promise<void> {
     getGame(game.slug, chnl);
     const newGame = await chnl.recv();
 
-    if (newGame.isCracked() || 1 > 0) {
+    if (newGame.isCracked()) {
       logger.info(`cron: ${game.title} is cracked!`);
 
       const users = await UserModel.find({ subscriptions: newGame }).exec();

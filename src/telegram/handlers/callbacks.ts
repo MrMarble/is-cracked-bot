@@ -90,7 +90,7 @@ async function handleSearchQuery(ctx: CustomContext): Promise<void> {
       reply_markup: game.isCracked() ? undefined : getGameKeyboard(ctx, game.id),
     });
   }
-  ctx.answerInlineQuery(results.slice(0, 50), { cache_time: 0 });
+  ctx.answerInlineQuery(results.slice(0, 50), { cache_time: 24 * 60 * 60 });
 }
 
 /**
