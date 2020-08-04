@@ -29,11 +29,13 @@ async function task(): Promise<void> {
         await new Promise((r) => setTimeout(r, 20 * i + 1));
 
         // Notify user
-        sendNotification(user.userId, game.getGameCard());
+        sendNotification(user.userId, newGame.getGameCard());
 
-        // Unsusbscribe user
-        user.subscriptions = user.subscriptions.filter((g) => g.id != game.id);
-        user.save();
+        // Unsubscribe user
+        if (newGame.isCracked()) {
+          user.subscriptions = user.subscriptions.filter((g) => g.id != game.id);
+          user.save();
+        }
       });
     }
   });
