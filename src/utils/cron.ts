@@ -20,7 +20,7 @@ async function task(): Promise<void> {
     getGame(game.slug, chnl);
     const newGame = await chnl.recv();
 
-    if (newGame.isCracked() || newGame.releaseDate.getTime() >= Date.now()) {
+    if (newGame.isCracked() || newGame.releaseDate.getTime() <= Date.now()) {
       logger.info(`cron: ${game.title} is ${newGame.isCracked() ? 'cracked' : 'released'}!`);
 
       const users = await UserModel.find({ subscriptions: newGame }).exec();
