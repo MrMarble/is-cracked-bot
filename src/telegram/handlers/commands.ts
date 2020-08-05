@@ -12,7 +12,8 @@ import { searchGame } from '../../crackwatch/methods';
 
 interface Command {
   handler(ctx: CustomContext): void;
-  command?: BotCommand;
+  command: BotCommand;
+  private?: boolean;
 }
 
 export const Commands: Array<Command> = [
@@ -39,6 +40,11 @@ export const Commands: Array<Command> = [
   },
   {
     handler: handleStats,
+    command: {
+      command: 'stats',
+      description: 'Shows stats of the bot',
+    },
+    private: true,
   },
 ];
 
