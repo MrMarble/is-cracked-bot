@@ -6,12 +6,13 @@ import { CustomContext } from './../telegram';
 import { GameModel } from '../../database/games/games.model';
 import { IGameDocument } from '../../database/games/games.types';
 import { Markup } from 'telegraf';
+import { UserModel } from './../../database/users/users.model';
 import { logger } from '../../main';
 import { searchGame } from '../../crackwatch/methods';
 
 interface Command {
   handler(ctx: CustomContext): void;
-  command: BotCommand;
+  command?: BotCommand;
 }
 
 export const Commands: Array<Command> = [
@@ -35,6 +36,9 @@ export const Commands: Array<Command> = [
       command: 'subscriptions',
       description: 'Shows your current subscriptions.',
     },
+  },
+  {
+    handler: handleStats,
   },
 ];
 
@@ -121,4 +125,20 @@ async function handleSubs(ctx: CustomContext): Promise<void> {
 
   const games = (await ctx.state.user.populate('subscriptions').execPopulate()).subscriptions;
   ctx.reply(ctx.i18n.t('subs_command'), { reply_markup: await getSubList(ctx, games) });
+}
+
+async function handleStats(ctx: CustomContext): Promise<void> {
+  if (!process.env?.CRACK_WATCH_ADMINS?.split(',').includes(ctx.from.id.toString())) return;
+
+  const users = await UserModel.find().populate('subscriptions').exec();
+  const games = await GameModel.find().exec();
+
+  ctx.reply(
+    [
+      `<b>users:</b>\t${users.length}`,
+      `<b>registered:</b>\t${users.filter((u) => u.dateOfRegistry).length}`,
+      `<b>games:</b>\t${games.length}`,
+    ].join('\n'),
+    { parse_mode: 'HTML' },
+  );
 }

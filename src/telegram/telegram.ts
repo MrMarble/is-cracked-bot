@@ -59,7 +59,7 @@ const registerHandlers = (bot: Telegraf<CustomContext>) => {
   for (const handler of Commands) {
     bot.command(handler.command.command, handler.handler);
   }
-  const tmpCommands = Commands.map((cmd) => cmd.command);
+  const tmpCommands = Commands.map((cmd) => cmd?.command).filter((c) => c);
   bot.telegram.setMyCommands(tmpCommands);
 
   // Inline
