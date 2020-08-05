@@ -134,7 +134,7 @@ async function handleSubs(ctx: CustomContext): Promise<void> {
 }
 
 async function handleStats(ctx: CustomContext): Promise<void> {
-  if (!process.env?.CRACK_WATCH_ADMINS?.split(',').includes(ctx.from.id.toString())) return;
+  if (!process.env?.CRACKWATCH_ADMINS?.split(',').includes(ctx.from.id.toString())) return;
 
   const users = await UserModel.find().populate('subscriptions').exec();
   const games = await GameModel.find().exec();

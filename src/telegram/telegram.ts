@@ -57,7 +57,6 @@ const registerHandlers = (bot: Telegraf<CustomContext>) => {
 
   // Commands
   for (const handler of Commands) {
-    if (handler.private) break;
     bot.command(handler.command.command, handler.handler);
   }
   const tmpCommands = Commands.filter((c) => !c?.private).map((cmd) => cmd.command);
