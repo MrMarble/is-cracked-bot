@@ -134,6 +134,12 @@ async function handleSubs(ctx: CustomContext): Promise<void> {
 }
 
 async function handleStats(ctx: CustomContext): Promise<void> {
+  logger.info('handle stats command', {
+    module: 'telegram/handlers',
+    from: ctx.from.id,
+    text: ctx.message.text,
+  });
+
   if (!process.env?.CRACKWATCH_ADMINS?.split(',').includes(ctx.from.id.toString())) return;
 
   const users = await UserModel.find().populate('subscriptions').exec();
