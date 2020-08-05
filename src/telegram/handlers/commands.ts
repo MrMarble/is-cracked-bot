@@ -138,12 +138,14 @@ async function handleStats(ctx: CustomContext): Promise<void> {
 
   const users = await UserModel.find().populate('subscriptions').exec();
   const games = await GameModel.find().exec();
-
+  const subs = users.flatMap((u) => u.subscriptions);
   ctx.reply(
     [
       `<b>users:</b>\t${users.length}`,
       `<b>registered:</b>\t${users.filter((u) => u.dateOfRegistry).length}`,
       `<b>games:</b>\t${games.length}`,
+      `<b>subs:</b>\t${subs.length}`,
+      `<b>unique:</b>\t${[...new Set(subs)].length}`,
     ].join('\n'),
     { parse_mode: 'HTML' },
   );
