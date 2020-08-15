@@ -176,7 +176,7 @@ async function handleRaw(ctx: CustomContext): Promise<void> {
   const query = ctx.message.text.substr('/search'.length).trim();
   const games = await GameModel.findByName(query);
   for (const game of games) {
-    ctx.reply(`<code>${game.toJSON()}</code>`, { parse_mode: 'HTML' });
+    ctx.reply(`<code>${JSON.stringify(game.toJSON(), null, 2)}</code>`, { parse_mode: 'HTML' });
     await new Promise((r) => setTimeout(r, 250));
   }
 }
