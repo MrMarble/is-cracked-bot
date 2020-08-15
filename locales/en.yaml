@@ -41,7 +41,7 @@ inline_desc: Type at least 3 characters to start searching
 
 released: |
   ${gameName} has been released!
-  ${link && `Check it out on <a href="${link}">steam</a>`}
+  ${link && 'Check it out on <a href="' + link + '">steam</a>'}
 
 buttons:
   subscribe: 🔔 Subscribe
