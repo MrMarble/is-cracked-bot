@@ -1,9 +1,9 @@
+import { bot, logger } from '../main';
+
 import { Channel } from './channel';
 import { IGameDocument } from './../database/games/games.types';
 import { UserModel } from './../database/users/users.model';
-import fetch from 'node-fetch';
 import { getGame } from '../crackwatch/methods';
-import { logger } from '../main';
 import { setInterval } from 'timers';
 
 const schedule = Number.parseInt(process.env.CRACKWATCH_SCHEDULE) ?? 60 * 60 * 1000; // Default 1h
@@ -31,30 +31,24 @@ async function task(): Promise<void> {
       users.forEach(async (user, i) => {
         await new Promise((r) => setTimeout(r, 20 * i + 1));
 
-        // Notify user
-        sendNotification(user.userId, newGame.getGameCard());
+        let text = `${bot.context.i18n.t('released', { gameName: game.title, link: game.links?.['steam'] })}`;
 
         // Unsubscribe user
         if (newGame.isCracked()) {
           user.subscriptions = user.subscriptions.filter((g) => g.id != game.id);
           user.save();
+
+          text = game.getGameCard();
         }
+        // Notify user
+        sendNotification(user.userId, text);
       });
     }
   });
 }
 
 async function sendNotification(chat_id: number, text: string): Promise<void> {
-  fetch(`https://api.telegram.org/bot${process.env.CRACKWATCH_TOKEN}/sendMessage`, {
-    method: 'POST',
-    compress: true,
-    headers: { 'content-type': 'application/json', connection: 'keep-alive' },
-    body: JSON.stringify({
-      chat_id,
-      text,
-      parse_mode: 'HTML',
-    }),
-  });
+  bot.telegram.sendMessage(chat_id, text, { parse_mode: 'HTML' });
 }
 
 async function getGamesToUpdate(): Promise<Array<IGameDocument>> {
