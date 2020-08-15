@@ -1,6 +1,6 @@
 /**
  * This interface describe a channel from which one can only consume. Useful to
- * pass a (bidirectionnal) channel to a method while ensuring the method will
+ * pass a (bidirectional) channel to a method while ensuring the method will
  * only read from that channel, never write to it.
  */
 export interface ReceiveOnlyChannel<T> {
@@ -10,7 +10,7 @@ export interface ReceiveOnlyChannel<T> {
 
 /**
  * This interface describes a channel to which one can only push. This is useful
- * to pass a (bidirectionnal) channel to a method while ensuring the method will
+ * to pass a (bidirectional) channel to a method while ensuring the method will
  * only write to that channel, never read from it
  */
 export interface SendOnlyChannel<T> {
@@ -24,7 +24,7 @@ export interface SendOnlyChannel<T> {
  * - Pushes are blocking by default: if an item is pushed into a channel, the
  *   push() method will block until someone reads from that channel.
  *
- * - The "size" argument can be used to control that behaviour: a push to a
+ * - The "size" argument can be used to control that behavior: a push to a
  *   channel of size 5 will block only if 5 elements are already present in that
  *   channel
  *
