@@ -46,6 +46,14 @@ export const Commands: Array<Command> = [
     },
     private: true,
   },
+  {
+    handler: handleRaw,
+    command: {
+      command: 'raw',
+      description: 'Shows db info of game',
+    },
+    private: true,
+  },
 ];
 
 async function handleStart(ctx: CustomContext): Promise<void> {
@@ -155,4 +163,20 @@ async function handleStats(ctx: CustomContext): Promise<void> {
     ].join('\n'),
     { parse_mode: 'HTML' },
   );
+}
+
+async function handleRaw(ctx: CustomContext): Promise<void> {
+  logger.info('handler raw command', {
+    module: 'telegram/handlers',
+    from: ctx.from.id,
+    text: ctx.message.text,
+  });
+  if (!process.env?.CRACKWATCH_ADMINS?.split(',').includes(ctx.from.id.toString())) return;
+
+  const query = ctx.message.text.substr('/search'.length).trim();
+  const games = await GameModel.findByName(query);
+  for (const game of games) {
+    ctx.reply(`<code>${game.toJSON()}</code>`, { parse_mode: 'HTML' });
+    await new Promise((r) => setTimeout(r, 250));
+  }
 }
