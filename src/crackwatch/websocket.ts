@@ -25,7 +25,8 @@ export const connectWS = (): void => {
     });
     process.exit(1);
   }
-
+  // Node detects my temporal handlers as a possible memory leak
+  ws.setMaxListeners(20);
   ws.onerror = handleErr;
   ws.onopen = handleOpen;
   ws.onmessage = handleMessage;
