@@ -55,8 +55,9 @@ export function getGame(slug: string, chnl: Channel<IGameDocument>): void {
   });
 }
 
-export function getGames(slugs: Array<string>, chnl: Channel<IGameDocument>): void {
+export async function getGames(slugs: Array<string>, chnl: Channel<IGameDocument>): Promise<void> {
   const ws = connectWS();
+  await new Promise((r) => setTimeout(r, 5000)); // hacky solution :/
   const idGen = idGenerator();
   let msgs = slugs.map((slug) => {
     return {
