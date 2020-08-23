@@ -7,6 +7,7 @@ import { getGame } from '../crackwatch/methods';
 import { setInterval } from 'timers';
 
 const schedule = Number.parseInt(process.env.CRACKWATCH_SCHEDULE) ?? 60 * 60 * 1000; // Default 1h
+export let TASK_INTERVAL: NodeJS.Timeout;
 
 async function task(): Promise<void> {
   logger.info('cron: scheduled task started');
@@ -60,7 +61,10 @@ async function getGamesToUpdate(): Promise<Array<IGameDocument>> {
   return games.filter((g, i) => games.indexOf(g) === i && !g.isCracked());
 }
 
-export async function startTask(): Promise<void> {
+export async function startTask(run = false): Promise<void> {
   logger.info('cron: creating background task');
-  setInterval(task, schedule);
+  if (run) {
+    task();
+  }
+  TASK_INTERVAL = setInterval(task, schedule);
 }

@@ -1,3 +1,4 @@
+import { TASK_INTERVAL, startTask } from './../../utils/cron';
 import { getGameKeyboard, getSubList, handleSub } from '../../utils/utils';
 
 import { BotCommand } from 'telegraf/typings/telegram-types';
@@ -51,6 +52,14 @@ export const Commands: Array<Command> = [
     command: {
       command: 'raw',
       description: 'Shows db info of game',
+    },
+    private: true,
+  },
+  {
+    handler: handleUpdate,
+    command: {
+      command: 'update',
+      description: 'Runs cron manually',
     },
     private: true,
   },
@@ -179,4 +188,16 @@ async function handleRaw(ctx: CustomContext): Promise<void> {
     ctx.reply(`<code>${JSON.stringify(game.toJSON(), null, 2)}</code>`, { parse_mode: 'HTML' });
     await new Promise((r) => setTimeout(r, 250));
   }
+}
+
+async function handleUpdate(ctx: CustomContext): Promise<void> {
+  logger.info('handler update command', {
+    module: 'telegram/handlers',
+    from: ctx.from.id,
+    text: ctx.message.text,
+  });
+  if (!process.env?.CRACKWATCH_ADMINS?.split(',').includes(ctx.from.id.toString())) return;
+
+  clearInterval(TASK_INTERVAL);
+  startTask(true);
 }
