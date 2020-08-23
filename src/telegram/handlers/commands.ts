@@ -182,7 +182,7 @@ async function handleRaw(ctx: CustomContext): Promise<void> {
   });
   if (!process.env?.CRACKWATCH_ADMINS?.split(',').includes(ctx.from.id.toString())) return;
 
-  const query = ctx.message.text.substr('/search'.length).trim();
+  const query = ctx.message.text.substr('/raw'.length).trim();
   const games = await GameModel.findByName(query);
   for (const game of games) {
     ctx.reply(`<code>${JSON.stringify(game.toJSON(), null, 2)}</code>`, { parse_mode: 'HTML' });
