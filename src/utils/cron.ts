@@ -3,7 +3,7 @@ import { bot, logger } from '../main';
 import { Channel } from './channel';
 import { IGameDocument } from './../database/games/games.types';
 import { UserModel } from './../database/users/users.model';
-import { getGame } from '../crackwatch/methods';
+import { getGames } from '../crackwatch/methods';
 import { setInterval } from 'timers';
 
 const schedule = Number.parseInt(process.env.CRACKWATCH_SCHEDULE) ?? 60 * 60 * 1000; // Default 1h
@@ -16,11 +16,12 @@ async function task(): Promise<void> {
 
   logger.info(`cron: games to update ${games.length}`);
 
-  games.forEach(async (game) => {
-    const chnl: Channel<IGameDocument> = new Channel();
-    getGame(game.slug, chnl);
-    const newGame = await chnl.recv();
+  const slugs = games.map((game) => game.slug);
+  const chnl: Channel<IGameDocument> = new Channel();
+  getGames(slugs, chnl);
 
+  chnl.forEach(async (newGame) => {
+    const game = games.find((g) => g.slug == newGame.slug);
     const justReleased =
       newGame.releaseDate.getTime() <= Date.now() && newGame.releaseDate.getTime() >= game.lastUpdated.getTime();
 

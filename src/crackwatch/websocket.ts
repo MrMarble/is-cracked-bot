@@ -7,15 +7,15 @@ import { logger } from './../main';
 export let ws: WebSocket; // Global websocket client
 export let idGen: Generator<string, never, never>; // Id Generator for websocket communication
 
-export const connectWS = (): void => {
-  if (ws) {
-    return;
+export const connectWS = (global = true): WebSocket => {
+  if (!global && ws) {
+    return ws;
   }
 
   const uri = getUri();
-
+  let _ws: WebSocket;
   try {
-    ws = new WebSocket(uri);
+    _ws = new WebSocket(uri);
     idGen = idGenerator();
   } catch (error) {
     logger.error('error connecting websocket', {
@@ -26,11 +26,11 @@ export const connectWS = (): void => {
     process.exit(1);
   }
   // Node detects my temporal handlers as a possible memory leak
-  ws.setMaxListeners(20);
-  ws.onerror = handleErr;
-  ws.onopen = handleOpen;
-  ws.onmessage = handleMessage;
-  ws.onclose = (event: WebSocket.CloseEvent) => {
+  _ws.setMaxListeners(20);
+  _ws.onerror = handleErr;
+  _ws.onopen = handleOpen;
+  _ws.onmessage = handleMessage;
+  _ws.onclose = (event: WebSocket.CloseEvent) => {
     logger.info('websocket closed', {
       code: event.code,
       reason: event.reason,
@@ -38,6 +38,9 @@ export const connectWS = (): void => {
     });
     reconnectWS();
   };
+
+  if (global) ws = _ws;
+  return _ws;
 };
 
 export const closeWS = (): void => {

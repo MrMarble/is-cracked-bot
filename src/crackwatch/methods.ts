@@ -1,5 +1,5 @@
-import { idGen, ws } from './websocket';
-import { parseResponse, responseToString } from '../utils/utils';
+import { connectWS, idGen, ws } from './websocket';
+import { idGenerator, parseResponse, responseToString } from '../utils/utils';
 
 import { Channel } from '../utils/channel';
 import { GameModel } from './../database/games/games.model';
@@ -52,6 +52,64 @@ export function getGame(slug: string, chnl: Channel<IGameDocument>): void {
         error: err.message,
       });
     }
+  });
+}
+
+export function getGames(slugs: Array<string>, chnl: Channel<IGameDocument>): void {
+  const ws = connectWS();
+  const idGen = idGenerator();
+  let msgs = slugs.map((slug) => {
+    return {
+      msg: 'method',
+      method: 'game.getAll',
+      params: [slug],
+      id: idGen.next().value,
+    };
+  });
+
+  const handleGame = (data: WebSocket.Data) => {
+    const msg: SocketResponse = parseResponse(data);
+    const sent = msgs.find((m) => m.id == msg.id);
+    if (msg.msg == 'result' && sent != undefined) {
+      msgs = msgs.filter((msg) => msg.id != sent.id);
+
+      delete msg.result.game._id;
+      GameModel.findOneAndUpdate({ slug: sent.params[0] }, msg.result.game, {
+        upsert: true,
+        setDefaultsOnInsert: true,
+        useFindAndModify: false,
+        new: true,
+      })
+        .exec()
+        .then((doc) => {
+          doc.setLastUpdated().then(() => {
+            doc.save();
+            chnl.send(doc);
+            if (msgs.length == 0) {
+              logger.info('all games updated, closing websocket', { module: 'websocket', msg });
+              chnl.close();
+              ws.close();
+            }
+          });
+        })
+        .catch((reason: Error) => {
+          logger.error('error creating game', { err: reason.message });
+          chnl.close();
+        });
+    }
+  };
+
+  ws.on('message', handleGame);
+  msgs.forEach((msg) => {
+    logger.info('fetching game info', { module: 'websocket', msg });
+    ws.send(responseToString(msg), (err) => {
+      if (err) {
+        logger.error('error fetching game', {
+          module: 'websockets',
+          error: err.message,
+        });
+      }
+    });
   });
 }
 
