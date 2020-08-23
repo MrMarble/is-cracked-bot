@@ -87,7 +87,7 @@ export async function getGames(slugs: Array<string>, chnl: Channel<IGameDocument
             doc.save();
             chnl.send(doc);
             if (msgs.length == 0) {
-              logger.info('all games updated, closing websocket', { module: 'websocket', msg });
+              logger.info('all games updated, closing websocket', { module: 'websocket' });
               chnl.close();
               ws.close();
             }

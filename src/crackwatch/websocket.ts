@@ -25,21 +25,22 @@ export const connectWS = (global = true): WebSocket => {
     });
     process.exit(1);
   }
-  // Node detects my temporal handlers as a possible memory leak
-  _ws.setMaxListeners(20);
+
   _ws.onerror = handleErr;
   _ws.onopen = handleOpen;
   _ws.onmessage = handleMessage;
-  _ws.onclose = (event: WebSocket.CloseEvent) => {
-    logger.info('websocket closed', {
-      code: event.code,
-      reason: event.reason,
-      wasClean: event.wasClean,
-    });
-    reconnectWS();
-  };
 
-  if (global) ws = _ws;
+  if (global) {
+    _ws.onclose = (event: WebSocket.CloseEvent) => {
+      logger.info('websocket closed', {
+        code: event.code,
+        reason: event.reason,
+        wasClean: event.wasClean,
+      });
+      reconnectWS();
+    };
+    ws = _ws;
+  }
   return _ws;
 };
 

@@ -42,7 +42,7 @@ connect(process.env.MONGO_USER, process.env.MONGO_PASSWORD, process.env.MONGO_HO
 process.on('beforeExit', () => disconnect());
 
 // Connect websocket
-connectWS();
+connectWS(true);
 
 // Close connection before exiting
 process.on('beforeExit', () => closeWS());
