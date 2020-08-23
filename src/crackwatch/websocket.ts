@@ -8,7 +8,7 @@ export let ws: WebSocket; // Global websocket client
 export let idGen: Generator<string, never, never>; // Id Generator for websocket communication
 
 export const connectWS = (global = true): WebSocket => {
-  if (!global && ws) {
+  if (global && ws) {
     return ws;
   }
 
