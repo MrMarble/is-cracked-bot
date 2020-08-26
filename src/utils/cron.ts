@@ -4,6 +4,7 @@ import { Channel } from './channel';
 import { IGameDocument } from './../database/games/games.types';
 import { UserModel } from './../database/users/users.model';
 import { getGames } from '../crackwatch/methods';
+import { i18n } from '../telegram/telegram';
 import { setInterval } from 'timers';
 
 const schedule = Number.parseInt(process.env.CRACKWATCH_SCHEDULE) ?? 60 * 60 * 1000; // Default 1h
@@ -33,7 +34,7 @@ async function task(): Promise<void> {
       users.forEach(async (user, i) => {
         await new Promise((r) => setTimeout(r, 20 * i + 1));
 
-        let text = `${bot.context.i18n.t('released', { gameName: game.title, link: game.links?.['steam'] })}`;
+        let text = `${i18n.t('released', { gameName: game.title, link: game.links?.['steam'] })}`;
 
         // Unsubscribe user
         if (newGame.isCracked()) {

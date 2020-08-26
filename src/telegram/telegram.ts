@@ -8,7 +8,7 @@ import { handleInlineQuery } from './handlers/callbacks';
 import { logger } from '../main';
 import { middlewares } from './middlewares';
 
-const i18n = new TelegrafI18n({
+export const i18n = new TelegrafI18n({
   defaultLanguage: 'en',
   allowMissing: false,
   directory: 'locales',
