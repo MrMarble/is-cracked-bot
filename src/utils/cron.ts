@@ -4,7 +4,6 @@ import { Channel } from './channel';
 import { IGameDocument } from './../database/games/games.types';
 import { UserModel } from './../database/users/users.model';
 import { getGames } from '../crackwatch/methods';
-import { i18n } from '../telegram/telegram';
 import { setInterval } from 'timers';
 
 const schedule = Number.parseInt(process.env.CRACKWATCH_SCHEDULE) ?? 60 * 60 * 1000; // Default 1h
@@ -41,7 +40,7 @@ async function task(): Promise<void> {
         // Unsubscribe user
         if (newGame.isCracked()) {
           user.subscriptions = user.subscriptions.filter((g) => g.id != newGame.id);
-          user.save();
+          user.save().catch((reason) => logger.error(`cron: Error saving user ${user.firstName}`, { reason }));
 
           text = newGame.getGameCard();
         }
