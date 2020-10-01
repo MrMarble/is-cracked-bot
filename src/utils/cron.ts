@@ -36,14 +36,14 @@ async function task(): Promise<void> {
 
         let text = `<b>${game.title}</b> has been released!`;
         if (game.links?.['steam']) {
-          text += `\nCheck it out on Check it out on <a href="${game.links['steam']}">steam</a>`;
+          text += `\nCheck it out on <a href="${game.links['steam']}">steam</a>`;
         }
         // Unsubscribe user
         if (newGame.isCracked()) {
-          user.subscriptions = user.subscriptions.filter((g) => g.id != game.id);
+          user.subscriptions = user.subscriptions.filter((g) => g.id != newGame.id);
           user.save();
 
-          text = game.getGameCard();
+          text = newGame.getGameCard();
         }
         // Notify user
         sendNotification(user.userId, text);
