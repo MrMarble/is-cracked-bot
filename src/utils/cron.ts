@@ -34,8 +34,10 @@ async function task(): Promise<void> {
       users.forEach(async (user, i) => {
         await new Promise((r) => setTimeout(r, 20 * i + 1));
 
-        let text = `${i18n.t('released', { gameName: game.title, link: game.links?.['steam'] })}`;
-
+        let text = `<b>${game.title}</b> has been released!`;
+        if (game.links?.['steam']) {
+          text += `\nCheck it out on Check it out on <a href="${game.links['steam']}">steam</a>`;
+        }
         // Unsubscribe user
         if (newGame.isCracked()) {
           user.subscriptions = user.subscriptions.filter((g) => g.id != game.id);
