@@ -40,10 +40,10 @@ async function task(): Promise<void> {
         }
         // Unsubscribe user
         if (newGame.isCracked()) {
-          user.subscriptions = user.subscriptions.filter((g) => g.id != game.id);
+          user.subscriptions = user.subscriptions.filter((g) => g.id != newGame.id);
           user.save();
 
-          text = game.getGameCard();
+          text = newGame.getGameCard();
         }
         // Notify user
         sendNotification(user.userId, text);
