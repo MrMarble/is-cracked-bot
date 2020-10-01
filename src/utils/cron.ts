@@ -36,7 +36,7 @@ async function task(): Promise<void> {
 
         let text = `<b>${game.title}</b> has been released!`;
         if (game.links?.['steam']) {
-          text += `\nCheck it out on Check it out on <a href="${game.links['steam']}">steam</a>`;
+          text += `\nCheck it out on <a href="${game.links['steam']}">steam</a>`;
         }
         // Unsubscribe user
         if (newGame.isCracked()) {
