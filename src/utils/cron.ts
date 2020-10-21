@@ -1,9 +1,11 @@
 import { bot, logger } from '../main';
 
 import { Channel } from './channel';
+import { CustomContext } from './../telegram/telegram';
 import { IGameDocument } from './../database/games/games.types';
 import { UserModel } from './../database/users/users.model';
 import { getGames } from '../crackwatch/methods';
+import { handleUnsub } from './utils';
 import { setInterval } from 'timers';
 
 const schedule = Number.parseInt(process.env.CRACKWATCH_SCHEDULE) ?? 60 * 60 * 1000; // Default 1h
@@ -39,9 +41,9 @@ async function task(): Promise<void> {
         }
         // Unsubscribe user
         if (newGame.isCracked()) {
-          user.subscriptions = user.subscriptions.filter((g) => g.id != newGame.id);
-          user.save().catch((reason) => logger.error(`cron: Error saving user ${user.firstName}`, { reason }));
-
+          if (!handleUnsub({ state: { user } }, newGame.id)) {
+            logger.error(`cron: Error saving user ${user.firstName}`);
+          }
           text = newGame.getGameCard();
         }
         // Notify user

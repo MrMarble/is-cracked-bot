@@ -73,7 +73,7 @@ export async function handleSub(ctx: CustomContext, gameId: string): Promise<IGa
 /**
  * Aux function to unsubscribe an User to a game
  */
-export async function handleUnsub(ctx: CustomContext, gameId: string): Promise<boolean> {
+export async function handleUnsub(ctx: Partial<CustomContext>, gameId: string): Promise<boolean> {
   const user = await ctx.state.user.populate('subscriptions').execPopulate();
   const index = user.subscriptions.findIndex((g) => g?.id == gameId);
   if (~index) {
