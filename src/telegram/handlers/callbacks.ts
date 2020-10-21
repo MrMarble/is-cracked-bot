@@ -34,6 +34,10 @@ async function handleUpdateCallback(ctx: CustomContext, gameId: string): Promise
     });
     ctx.answerCbQuery();
   } else {
+    ctx.editMessageText(game.getGameCard(), {
+      parse_mode: 'HTML',
+      reply_markup: game.isCracked() ? undefined : getGameKeyboard(ctx, game.id),
+    });
     ctx.answerCbQuery(ctx.i18n.t('updated'), false, { cache_time: (1000 * 60 * 60 * 24 - lastUpdated) / 1000 });
   }
 }
