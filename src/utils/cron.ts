@@ -1,7 +1,6 @@
 import { bot, logger } from '../main';
 
 import { Channel } from './channel';
-import { CustomContext } from './../telegram/telegram';
 import { IGameDocument } from './../database/games/games.types';
 import { UserModel } from './../database/users/users.model';
 import { getGames } from '../crackwatch/methods';
