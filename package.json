@@ -29,6 +29,7 @@
     "eslint-config-prettier": "^6.11.0",
     "husky": "^4.2.5",
     "lint-staged": "^10.2.11",
+    "mock-socket": "^9.0.3",
     "prettier": "^2.0.5",
     "rimraf": "^3.0.2",
     "sinon": "^9.2.1",
