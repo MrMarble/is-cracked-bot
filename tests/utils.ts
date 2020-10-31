@@ -1,7 +1,6 @@
 import * as assert from 'uvu/assert';
 import * as utils from '../src/utils/utils';
 
-import { idGen } from './../src/crackwatch/websocket';
 import { suite } from 'uvu';
 
 interface TestString {
