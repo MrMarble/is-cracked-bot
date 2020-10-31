@@ -1,3 +1,4 @@
+import { WSocket, newSocket } from './../crackwatch/websocket';
 import { bot, logger } from '../main';
 
 import { Channel } from './channel';
@@ -19,7 +20,8 @@ async function task(): Promise<void> {
 
   const slugs = games.map((game) => game.slug);
   const chnl: Channel<IGameDocument> = new Channel();
-  getGames(slugs, chnl);
+  const socket = await newSocket(3 * 60 * 1000); // Independent websocket
+  getGames(socket, slugs, chnl);
 
   chnl.forEach(async (newGame) => {
     const game = games.find((g) => g.slug == newGame.slug);

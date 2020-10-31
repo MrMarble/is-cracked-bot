@@ -2,6 +2,12 @@ import { Channel } from '../utils/channel';
 import { IGameDocument } from './../database/games/games.types';
 import WebSocket from 'ws';
 
+export interface Socket {
+  ws: WebSocket;
+  idGen: Generator<string, never, never>;
+  lastMessage: number;
+}
+
 export interface SocketResponse {
   msg?: string;
   server_id?: string;

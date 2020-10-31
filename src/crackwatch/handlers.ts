@@ -1,5 +1,6 @@
 import { parseResponse, responseToString } from '../utils/utils';
 
+import { Socket } from './types';
 import WebSocket from 'ws';
 import { logger } from '../main';
 
@@ -8,7 +9,7 @@ export function handleOpen(event: WebSocket.OpenEvent): void {
     url: event.target.url,
   });
 }
-export function handleMessage(event: WebSocket.MessageEvent): void {
+export function handleMessage(this: Socket, event: WebSocket.MessageEvent): void {
   const msg = parseResponse(event.data);
 
   if (msg.server_id) {
@@ -25,35 +26,37 @@ export function handleMessage(event: WebSocket.MessageEvent): void {
   switch (msg.msg) {
     case 'connected':
       logger.info('websocket authorized', { msg });
+      this.ws.emit('authorized');
       break;
     case 'ping':
       logger.debug('websocket ping', { msg });
-      handlePing.bind(event.target)();
+      handlePing.bind(this)();
       break;
     case 'pong':
       logger.debug('websocket pong', { msg });
       break;
     default:
+      this.lastMessage = Date.now();
       logger.debug('websocket message', { data: event.data, type: event.type });
       break;
   }
 }
 
-export const handleErr = (event: WebSocket.ErrorEvent): void => {
+export function handleErr(this: Socket, event: WebSocket.ErrorEvent): void {
   logger.error('websocket error', {
     error: event.message,
     type: event.type,
   });
-};
+}
 
-function handlePing(this: WebSocket): void {
-  this.send(
+function handlePing(this: Socket): void {
+  this.ws.send(
     responseToString({
       msg: 'pong',
     }),
   );
   setTimeout(() => {
-    this.send(
+    this.ws.send(
       responseToString({
         msg: 'ping',
       }),

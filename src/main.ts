@@ -1,9 +1,9 @@
 import { CustomContext, newBot, start } from './telegram/telegram';
-import { closeWS, connectWS } from './crackwatch/websocket';
 import { connect, disconnect } from './database/database';
 import { createLogger, format, transports } from 'winston';
 
 import { Telegraf } from 'telegraf';
+import { closeWS } from './crackwatch/websocket';
 import { config } from 'dotenv';
 import { startTask } from './utils/cron';
 
@@ -40,9 +40,6 @@ connect(process.env.MONGO_USER, process.env.MONGO_PASSWORD, process.env.MONGO_HO
 
 // Close connection before exiting
 process.on('beforeExit', () => disconnect());
-
-// Connect websocket
-connectWS();
 
 // Close connection before exiting
 process.on('beforeExit', () => closeWS());
