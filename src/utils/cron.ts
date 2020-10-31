@@ -1,4 +1,3 @@
-import { WSocket, newSocket } from './../crackwatch/websocket';
 import { bot, logger } from '../main';
 
 import { Channel } from './channel';
@@ -6,6 +5,7 @@ import { IGameDocument } from './../database/games/games.types';
 import { UserModel } from './../database/users/users.model';
 import { getGames } from '../crackwatch/methods';
 import { handleUnsub } from './utils';
+import { newSocket } from './../crackwatch/websocket';
 import { setInterval } from 'timers';
 
 const schedule = Number.parseInt(process.env.CRACKWATCH_SCHEDULE) ?? 60 * 60 * 1000; // Default 1h

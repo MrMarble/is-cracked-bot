@@ -9,13 +9,14 @@
     "clean": "rimraf coverage build tmp",
     "build": "tsc -p tsconfig.release.json",
     "test": "uvu -br ts-node/register tests",
+    "test:build": "tsc -p tsconfig.release.json --noEmit",
     "build:watch": "tsc -w -p tsconfig.release.json",
     "lint": "eslint . --ext .ts",
     "lint:fix": "eslint . --ext .ts --fix",
     "format": "prettier --write src"
   },
   "keywords": [
-    "cracwatch"
+    "crackwatch"
   ],
   "author": "MrMarble",
   "license": "ISC",
