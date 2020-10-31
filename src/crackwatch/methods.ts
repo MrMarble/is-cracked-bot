@@ -1,15 +1,16 @@
-import { connectWS, idGen, ws } from './websocket';
-import { idGenerator, parseResponse, responseToString } from '../utils/utils';
+import { Socket, SocketResponse } from './types';
+import { parseResponse, responseToString } from '../utils/utils';
 
 import { Channel } from '../utils/channel';
 import { GameModel } from './../database/games/games.model';
 import { IGameDocument } from '../database/games/games.types';
-import { SocketResponse } from './types';
+import { WSocket } from './websocket';
 import WebSocket from 'ws';
 import { logger } from '../main';
 
-export function getGame(slug: string, chnl: Channel<IGameDocument>): void {
-  const id: string = idGen.next().value;
+export async function getGame(slug: string, chnl: Channel<IGameDocument>): Promise<void> {
+  const socket = await new WSocket().socket;
+  const id: string = socket.idGen.next().value;
   const msg: SocketResponse = {
     msg: 'method',
     method: 'game.getAll',
@@ -40,12 +41,12 @@ export function getGame(slug: string, chnl: Channel<IGameDocument>): void {
           logger.error('error creating game', { err: reason.message });
           chnl.close();
         });
-      ws.off('message', handleGame);
+      socket.ws.off('message', handleGame);
     }
   };
 
-  ws.on('message', handleGame);
-  ws.send(responseToString(msg), (err) => {
+  socket.ws.on('message', handleGame);
+  socket.ws.send(responseToString(msg), (err) => {
     if (err) {
       logger.error('error fetching game', {
         module: 'websockets',
@@ -55,16 +56,13 @@ export function getGame(slug: string, chnl: Channel<IGameDocument>): void {
   });
 }
 
-export async function getGames(slugs: Array<string>, chnl: Channel<IGameDocument>): Promise<void> {
-  const ws = connectWS(false);
-  await new Promise((r) => setTimeout(r, 5000)); // hacky solution :/
-  const idGen = idGenerator();
+export async function getGames(socket: Socket, slugs: Array<string>, chnl: Channel<IGameDocument>): Promise<void> {
   let msgs = slugs.map((slug) => {
     return {
       msg: 'method',
       method: 'game.getAll',
       params: [slug],
-      id: idGen.next().value,
+      id: socket.idGen.next().value,
     };
   });
 
@@ -89,7 +87,7 @@ export async function getGames(slugs: Array<string>, chnl: Channel<IGameDocument
             if (msgs.length == 0) {
               logger.info('all games updated, closing websocket', { module: 'websocket' });
               chnl.close();
-              ws.close();
+              socket.ws.close();
             }
           });
         })
@@ -100,10 +98,10 @@ export async function getGames(slugs: Array<string>, chnl: Channel<IGameDocument
     }
   };
 
-  ws.on('message', handleGame);
+  socket.ws.on('message', handleGame);
   msgs.forEach((msg) => {
     logger.info('fetching game info', { module: 'websocket', msg });
-    ws.send(responseToString(msg), (err) => {
+    socket.ws.send(responseToString(msg), (err) => {
       if (err) {
         logger.error('error fetching game', {
           module: 'websockets',
@@ -115,7 +113,8 @@ export async function getGames(slugs: Array<string>, chnl: Channel<IGameDocument
 }
 
 export async function searchGame(param: string, chnl: Channel<IGameDocument[]>): Promise<void> {
-  const id: string = idGen.next().value;
+  const socket = await new WSocket().socket;
+  const id: string = socket.idGen.next().value;
   const msg: SocketResponse = {
     msg: 'method',
     method: 'games.page',
@@ -157,12 +156,12 @@ export async function searchGame(param: string, chnl: Channel<IGameDocument[]>):
           logger.error('error saving games', { err: reason.message });
           chnl.close();
         });
-      ws.off('message', handleSearch);
+      socket.ws.off('message', handleSearch);
     }
   };
 
-  ws.on('message', handleSearch);
-  ws.send(responseToString(msg), (err) => {
+  socket.ws.on('message', handleSearch);
+  socket.ws.send(responseToString(msg), (err) => {
     if (err) {
       logger.error('error searching games', {
         module: 'websockets',
