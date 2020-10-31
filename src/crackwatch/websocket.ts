@@ -6,7 +6,7 @@ import WebSocket from 'ws';
 import { logger } from './../main';
 import { waitFor } from 'wait-for-event';
 
-export async function newSocket(): Promise<Socket> {
+export async function newSocket(timeAlive: number = 10 * 60 * 1000): Promise<Socket> {
   logger.info('Creating new instance of WebSocket');
   const socket: Socket = {
     ws: null,
@@ -40,7 +40,7 @@ export async function newSocket(): Promise<Socket> {
   };
 
   const interval = setInterval(() => {
-    if (Date.now() - socket.lastMessage > 30 * 1000) {
+    if (Date.now() - socket.lastMessage > timeAlive) {
       //Last query is older than 10 minutes
       logger.info('Closing websocket', {
         reason: 'idle',
@@ -49,7 +49,7 @@ export async function newSocket(): Promise<Socket> {
       delete WSocket.instance;
       clearInterval(interval);
     }
-  }, 30 * 1000);
+  }, 5 * 60 * 1000);
 
   await waitFor('authorized', socket.ws);
   return socket;
