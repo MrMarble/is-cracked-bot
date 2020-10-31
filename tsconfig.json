@@ -23,8 +23,17 @@
   },
   "include": [
     "src/**/*",
-    "__tests__/**/*"
+    "tests/**/*"
   ],
+  "ts-node": {
+    "transpileOnly": true,
+    "compilerOptions": {
+      "module": "CommonJS"
+    },
+    "include": [
+      "tests/**/*"
+    ]
+  },
   "exclude": [
     "build/*"
   ]
